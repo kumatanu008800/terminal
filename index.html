@@ -363,7 +363,7 @@ if(orukanEstimated !== null){
     `<div class="bigFX">
       オルカン推算 ${orukanEstimated.toFixed(0)}
       <br>
-      <span style="font-size:2vw;color:${color};">
+      <span style="font-size:18vw;color:${color};">
         ${arrow}${Math.abs(orukanDiff).toFixed(0)}
         (${Math.abs(orukanDiffPercent).toFixed(2)}%)
       </span>
@@ -718,7 +718,8 @@ const alertWords = [
   "FOMC","長期金利","10年債","ドル円",
   "為替","政策金利","固定金利","変動金利",
 "住宅ローン","金利上昇","金利引き上げ",
-"金利引き下げ","破綻"
+"金利引き下げ","破綻","指数","米","日本",
+"短期金利","変動金利"
 ];
 
 function highlightWords(text){
