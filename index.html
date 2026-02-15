@@ -297,12 +297,12 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},60000);
+},90000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
 function updateTicker(){
-  const fullText = tickerFX + tickerNews;
+const fullText = tickerFX + tickerStock + tickerNews;
   tickerText1.innerHTML = fullText;
   tickerText2.innerHTML = fullText;
 
