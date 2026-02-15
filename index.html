@@ -269,7 +269,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},12000);
+},60000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -347,15 +347,27 @@ bigfx.innerHTML =
   + (changeHTML ? "<br>"+changeHTML : "");
   
   /* ===== オルカン推算表示 ===== */
-
 if(orukanEstimated !== null){
 
+  const up = orukanDiff > 0;
+  const down = orukanDiff < 0;
+
+  const color = up ? "#00ff66" :
+                down ? "#ff3333" :
+                "#ffffff";
+
+  const arrow = up ? "▲" :
+                down ? "▼" : "－";
+
   bigfx.innerHTML +=
-    `<br><span style="font-size:0.35em;color:#00ffff;">
-     オルカン推算 ${orukanEstimated.toFixed(0)}円
-     (${orukanDiff>=0?"+":""}${orukanDiff.toFixed(0)}円
-     ${orukanDiffPercent>=0?"+":""}${orukanDiffPercent.toFixed(2)}%)
-     </span>`;
+    `<div class="bigFX">
+      オルカン推算 ${orukanEstimated.toFixed(0)}
+      <br>
+      <span style="font-size:2vw;color:${color};">
+        ${arrow}${Math.abs(orukanDiff).toFixed(0)}
+        (${Math.abs(orukanDiffPercent).toFixed(2)}%)
+      </span>
+     </div>`;
 }
 
 const priceEl = document.getElementById("price");
