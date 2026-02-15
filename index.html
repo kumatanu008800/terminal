@@ -173,7 +173,9 @@ canvas{
 
 <div id="page_weather" class="page">
 <div class="panel">
-<div style="color:#ff8800;margin-bottom:10px;">奈良県 生駒市あすか野 週間天気</div>
+<div style="color:#ff8800;margin-bottom:10px;">
+週間天気
+</div>
 <div id="weatherToday">取得中…</div>
 <div style="margin-top:10px;border-top:1px solid #222;padding-top:8px;" id="weatherWeekly"></div>
 </div>
@@ -552,7 +554,8 @@ window.addEventListener("resize",()=>drawChart());
 loadStock();
 setInterval(loadStock,60000);
 
-/* ===== 天気 ===== */
+/* ===== 天気（GPS対応＋フォールバック） ===== */
+
 function getWeatherIcon(code){
  if(code===0)return"☀️";
  if(code===1)return"🌤";
@@ -568,8 +571,42 @@ function getWeatherIcon(code){
 }
 
 async function loadWeather(){
+
+  if(!navigator.geolocation){
+    loadDefaultWeather();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      loadWeatherByCoords(
+        pos.coords.latitude,
+        pos.coords.longitude,
+        "現在地"
+      );
+    },
+    ()=>{
+      loadDefaultWeather();
+    }
+  );
+}
+
+function loadDefaultWeather(){
+  // 奈良県生駒市あすか野南
+  loadWeatherByCoords(
+    34.69,
+    135.70,
+    "奈良県生駒市あすか野南"
+  );
+}
+
+async function loadWeatherByCoords(lat,lon,label){
+
  try{
-  const url="https://api.open-meteo.com/v1/forecast?latitude=34.70&longitude=135.70&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo";
+
+  const url =
+   `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo`;
+
   const res=await fetch(url);
   const j=await res.json();
 
@@ -582,7 +619,8 @@ async function loadWeather(){
    "（"+week[todayDate.getDay()]+"）";
 
   weatherToday.innerHTML=
-   `<span style="font-size:2.2em;">${getWeatherIcon(j.daily.weathercode[0])}</span> ${todayLabel}<br>
+   `${label}<br>
+   <span style="font-size:2.2em;">${getWeatherIcon(j.daily.weathercode[0])}</span> ${todayLabel}<br>
    最高気温 ${j.daily.temperature_2m_max[0]}℃<br>
    最低気温 ${j.daily.temperature_2m_min[0]}℃<br>
    降水確率 ${j.daily.precipitation_probability_max[0]}%`;
@@ -590,14 +628,14 @@ async function loadWeather(){
   let wk="";
   for(let i=1;i<7;i++){
    const d=new Date(j.daily.time[i]);
-   const label=
+   const label2=
     (d.getMonth()+1)+"/"+
     d.getDate()+
     "（"+week[d.getDay()]+"）";
 
    wk+=`<div class='dailyItem'>
    ${getWeatherIcon(j.daily.weathercode[i])}
-   ${label}
+   ${label2}
    ${j.daily.temperature_2m_max[i]}℃ /
    ${j.daily.temperature_2m_min[i]}℃
    ${j.daily.precipitation_probability_max[i]}%
@@ -609,6 +647,7 @@ async function loadWeather(){
   weatherToday.innerText="天気取得エラー";
  }
 }
+
 loadWeather();
 setInterval(loadWeather,3600000);
 
