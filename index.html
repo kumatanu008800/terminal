@@ -269,7 +269,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},12000);
+},60000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -403,7 +403,7 @@ if(priceEl && lastFX !== null){
 }
 
 loadFX();
-setInterval(loadFX,60000);
+setInterval(loadFX,15000);
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
