@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bloomberg Terminal LV400</title>
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  background:#000;
+  color:#fff;
+  font-family:"Courier New",monospace;
+  height:100%;
+}
+body{display:flex;height:100dvh;overflow:hidden;}
+
+#leftmenu{
+  width:60px;
+  min-width:60px;
+  background:#070707;
+  border-right:2px solid #ff8800;
+  position:relative;
+}
+#bootdate{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  color:#ff8800;
+  font-size:36px;
+  letter-spacing:4px;
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  white-space:nowrap;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+#main{flex:1;display:flex;flex-direction:column;min-width:0;}
+
+#topbar{
+  height:60px;
+  background:#111;
+  border-bottom:2px solid #ff8800;
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+}
+#clock{color:#ff8800;font-size:28px;font-weight:bold;}
+
+#pages{position:relative;flex:1;overflow:hidden;}
+
+.page{
+  position:absolute;inset:0;padding:20px;
+  box-sizing:border-box;display:flex;gap:20px;
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .6s ease;
+}
+.page.active{opacity:1;visibility:visible;pointer-events:auto;}
+
+.panel{
+  flex:1;background:#050505;border:1px solid #222;
+  padding:15px;box-sizing:border-box;
+}
+
+.bigFX{
+  font-size:10vw;
+  color:#ff8800;
+  font-weight:bold;
+  text-align:center;
+  width:100%;
+}
+
+.priceFlashUp{
+  color:#00ff66 !important;
+  background:#002b00;
+  box-shadow:0 0 16px #00ff66;
+  transition:all .2s ease-out;
+}
+
+.priceFlashDown{
+  color:#ff3333 !important;
+  background:#2b0000;
+  box-shadow:0 0 16px #ff3333;
+  transition:all .2s ease-out;
+}
+
+.fxChangeUp{color:#00ff66;}
+.fxChangeDown{color:#ff3333;}
+
+.updatedTime{
+  font-size:14px;
+  color:#ff8800;
+  margin-top:10px;
+}
+.newsHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.newsTitle{
+  color:#ff8800;
+  font-size:18px;
+  font-weight:bold;
+}
+canvas{
+  background:#111;
+  border:1px solid #ff8800;
+  width:100%;
+  height:300px;
+}
+
+.newsItem{border-bottom:1px solid #222;padding:6px 0;font-size:14px;}
+.dailyItem{border-bottom:1px solid #222;padding:4px 0;font-size:14px;}
+
+#ticker{
+  height:50px;
+  background:#111;
+  border-top:2px solid #ff8800;
+  overflow:hidden;
+  white-space:nowrap;
+}
+#tickerText{
+  display:inline-block;
+  padding-left:100%;
+  color:#ff8800;
+  font-weight:bold;
+}
+@keyframes ticker{
+  from{transform:translateX(0);}
+  to{transform:translateX(-100%);}
+}
+
+@media (orientation: landscape){
+  .page{flex-direction:column;overflow:auto;}
+  canvas{height:250px;}
+  .bigFX{font-size:6vw;}
+}
+</style>
+</head>
+<body>
+
+<div id="leftmenu">
+  <div id="bootdate"></div>
+</div>
+
+<div id="main">
+
+<div id="topbar">
+  <div id="clock">00:00:00</div>
+</div>
+
+<div id="pages">
+
+<div id="page_clock" class="page active">
+<div class="panel" style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+<div class="bigFX" id="bigfx">USD/JPY 取得中…</div>
+<div class="updatedTime" id="fxUpdated"></div>
+</div>
+</div>
+
+<div id="page_stock" class="page">
+<div class="panel">
+<div style="color:#ff8800;margin-bottom:10px;">MAXIS 全世界株式（オール・カントリー）</div>
+<div id="ac_price">取得中…</div>
+<div class="updatedTime" id="stockUpdated"></div>
+<canvas id="chart"></canvas>
+</div>
+</div>
+
+<div id="page_weather" class="page">
+<div class="panel">
+<div style="color:#ff8800;margin-bottom:10px;">奈良県 生駒市あすか野 週間天気</div>
+<div id="weatherToday">取得中…</div>
+<div style="margin-top:10px;border-top:1px solid #222;padding-top:8px;" id="weatherWeekly"></div>
+</div>
+</div>
+
+<!-- 総合ニュースページ -->
+<div id="page_news_general" class="page">
+  <div class="panel">
+  <div class="newsHeader">
+    <div class="newsTitle">【総合ニュース】</div>
+    <div class="updatedTime" id="newsUpdatedGeneral"></div>
+  </div>
+  <div id="newsGeneral"></div>
+</div>
+</div>
+
+<!-- 経済ニュースページ -->
+<div id="page_news_economy" class="page">
+  <div class="panel">
+  <div class="newsHeader">
+    <div class="newsTitle">【経済ニュース】</div>
+    <div class="updatedTime" id="newsUpdatedEconomy"></div>
+  </div>
+  <div id="newsEconomy"></div>
+</div>
+</div>
+
+</div>
+
+<div id="ticker"><div id="tickerText">LOADING...</div></div>
+</div>
+
+<script>
+/* ===== DOM取得 ===== */
+const bootdate=document.getElementById("bootdate");
+const clock=document.getElementById("clock");
+const bigfx=document.getElementById("bigfx");
+const fxUpdated=document.getElementById("fxUpdated");
+const ac_price=document.getElementById("ac_price");
+const stockUpdated=document.getElementById("stockUpdated");
+const weatherToday=document.getElementById("weatherToday");
+const weatherWeekly=document.getElementById("weatherWeekly");
+const newsGeneral=document.getElementById("newsGeneral");
+const newsEconomy=document.getElementById("newsEconomy");
+const newsUpdatedGeneral =
+  document.getElementById("newsUpdatedGeneral");
+
+const newsUpdatedEconomy =
+  document.getElementById("newsUpdatedEconomy");
+const tickerText=document.getElementById("tickerText");
+
+/* ===== 左メニュー日付 ===== */
+const now=new Date();
+const week=["日","月","火","水","木","金","土"];
+bootdate.innerText=
+ (now.getMonth()+1)+"月"+
+ now.getDate()+"日"+
+ "（"+week[now.getDay()]+"）";
+
+/* ===== 時計 ===== */
+function updateClock(){
+ const n=new Date();
+ clock.innerText=
+  String(n.getHours()).padStart(2,"0")+":"+
+  String(n.getMinutes()).padStart(2,"0")+":"+
+  String(n.getSeconds()).padStart(2,"0");
+}
+setInterval(updateClock,1000);
+updateClock();
+
+function getNowTime(){
+ const n=new Date();
+ return String(n.getHours()).padStart(2,"0")+":"+
+        String(n.getMinutes()).padStart(2,"0")+":"+
+        String(n.getSeconds()).padStart(2,"0");
+}
+
+/* ===== ページ切替 ===== */
+const pages=[
+  "page_clock",
+  "page_stock",
+  "page_weather",
+  "page_news_general",
+  "page_news_economy"
+];
+let pageIndex=0;
+setInterval(()=>{
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ pageIndex=(pageIndex+1)%pages.length;
+ document.getElementById(pages[pageIndex]).classList.add("active");
+ if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
+},12000);
+
+/* ===== ティッカー ===== */
+let tickerFX="",tickerStock="",tickerNews="";
+function updateTicker(){
+
+  const fullText =
+    "◆ " + tickerFX +
+    " ◆ " + tickerStock +
+    (tickerNews ? tickerNews : "");
+
+  tickerText.innerHTML = fullText;
+
+  /* ==== 文字数に応じて速度自動調整 ==== */
+
+  const length = fullText.length;
+
+  // 1文字あたり0.12秒（好みで0.1〜0.15調整可）
+  const duration = Math.max(15, length * 0.12);
+
+  tickerText.style.animation = "none";
+  void tickerText.offsetWidth; // 再描画トリガー
+  tickerText.style.animation =
+    `ticker ${duration}s linear infinite`;
+}
+/* ===== USDJPY 直前更新比 ===== */
+
+let lastFX = null;
+
+async function loadFX(){
+  try{
+
+    const res = await fetch(
+      "https://open.er-api.com/v6/latest/USD",
+      { cache:"no-store" }
+    );
+
+    const data = await res.json();
+    if(!data.rates || !data.rates.JPY) throw "API error";
+
+    const latest = data.rates.JPY;
+
+    let changeHTML = "";
+    let tickerMove = "";
+
+    if(lastFX !== null){
+
+      const change = latest - lastFX;
+      const percent = (change / lastFX) * 100;
+
+      const up = change > 0;
+      const down = change < 0;
+
+      const color = up ? "#00ff66" :
+                    down ? "#ff3333" :
+                    "#ffffff";
+
+      const arrow = up ? "▲" :
+                    down ? "▼" : "－";
+
+      changeHTML =
+        `<span style="font-size:18px;color:${color}">
+         前回比 ${change>=0?"+":""}${change.toFixed(3)}
+         (${percent>=0?"+":""}${percent.toFixed(2)}%)
+         </span>`;
+
+      tickerMove =
+        `<span style="color:${color}">
+         ${arrow}${Math.abs(change).toFixed(3)}
+         (${Math.abs(percent).toFixed(2)}%)
+         </span>`;
+    }
+
+bigfx.innerHTML =
+  `USD/JPY <span id="price">${latest.toFixed(3)}</span>`
+  + (changeHTML ? "<br>"+changeHTML : "");
+
+const priceEl = document.getElementById("price");
+
+if(priceEl && lastFX !== null){
+
+  priceEl.classList.remove("priceFlashUp","priceFlashDown");
+
+  if(latest > lastFX){
+    priceEl.classList.add("priceFlashUp");
+  }else if(latest < lastFX){
+    priceEl.classList.add("priceFlashDown");
+  }
+
+  setTimeout(()=>{
+    priceEl.classList.remove("priceFlashUp","priceFlashDown");
+  },350);
+}
+
+    tickerFX =
+      `USD/JPY ${latest.toFixed(3)} ${tickerMove}`;
+
+    updateTicker();
+    fxUpdated.innerText = "UPDATED " + getNowTime();
+
+    lastFX = latest;
+
+  }catch(e){
+    console.error(e);
+    bigfx.innerHTML="USD/JPY<br>取得エラー";
+    fxUpdated.innerText="ERROR "+getNowTime();
+  }
+}
+
+loadFX();
+setInterval(loadFX,60000);
+
+/* ===== 株 ===== */
+let chartData=[],lastLabels=[],volumeData=[];
+
+async function loadStock(){
+ try{
+
+  const url =
+   "https://query2.finance.yahoo.com/v8/finance/chart/2559.T?range=1mo&interval=1d";
+
+  const proxy =
+   "https://corsproxy.io/?" + encodeURIComponent(url);
+
+  const res = await fetch(proxy, {
+    cache: "no-store"
+  });
+
+  if(!res.ok) throw "HTTP ERROR";
+
+  const json = await res.json();
+  if(!json.chart?.result?.[0]) throw "DATA ERROR";
+
+  const result = json.chart.result[0];
+
+  const rawPrices =
+    result.indicators.adjclose[0].adjclose;
+
+  const rawTimes =
+    result.timestamp;
+
+  const rawVolume =
+    result.indicators.quote[0].volume;
+
+  const filtered = rawPrices
+    .map((p,i)=>({
+      price:p,
+      time:rawTimes[i],
+      volume:rawVolume[i]
+    }))
+    .filter(v=>v.price!==null && v.volume!==null)
+    .slice(-7);
+
+  const prices  = filtered.map(v=>v.price);
+  const times   = filtered.map(v=>v.time);
+  const volumes = filtered.map(v=>v.volume);
+
+  if(prices.length < 2) throw "NOT ENOUGH DATA";
+
+  lastLabels = times.map(t=>{
+    const d=new Date(t*1000);
+    return (d.getMonth()+1)+"/"+d.getDate();
+  });
+
+  const latest = prices.at(-1);
+  const prev   = prices.at(-2);
+
+  const change = ((latest - prev) / prev) * 100;
+
+  ac_price.innerHTML =
+    latest.toFixed(0)+" 円 "+
+    "<span style='color:"+(change>=0?"#00ff66":"#ff3333")+"'>"+
+    (change>=0?"+":"")+change.toFixed(2)+"%</span>";
+
+  stockUpdated.innerText =
+    "UPDATED "+getNowTime();
+
+  tickerStock =
+    `2559.T ${latest.toFixed(0)}
+     <span style="color:${change>=0?"#00ff66":"#ff3333"}">
+     ${change>=0?"▲":"▼"}${Math.abs(change).toFixed(2)}%</span>`;
+
+  updateTicker();
+
+  chartData = prices;
+  volumeData = volumes;
+
+  setTimeout(()=>drawChart(),50);
+
+ }catch(e){
+  console.error(e);
+  ac_price.innerText="株価取得エラー";
+  stockUpdated.innerText="ERROR "+getNowTime();
+ }
+}
+
+function drawChart(){
+ if(chartData.length<2) return;
+ const c=document.getElementById("chart");
+ const ctx=c.getContext("2d");
+
+ const dpr=window.devicePixelRatio||1;
+ ctx.setTransform(1,0,0,1,0,0);
+ c.width=c.clientWidth*dpr;
+ c.height=c.clientHeight*dpr;
+ ctx.scale(dpr,dpr);
+
+ ctx.clearRect(0,0,c.width,c.height);
+
+const padding=60;
+const w=c.clientWidth-padding*2;
+
+const totalHeight=c.clientHeight-padding*2;
+const priceHeight=totalHeight*0.7;
+const volumeHeight=totalHeight*0.3;
+
+ const rawMax=Math.max(...chartData);
+ const rawMin=Math.min(...chartData);
+
+ const paddingRange=(rawMax-rawMin)*0.1;
+ const max=rawMax+paddingRange;
+ const min=rawMin-paddingRange;
+ const range=max-min||1;
+
+ ctx.fillStyle="#ff8800";
+ ctx.font="12px Courier New";
+
+ for(let i=0;i<=4;i++){
+  const val=min+range*(i/4);
+ const y=padding+priceHeight-(priceHeight*(i/4));
+  ctx.strokeStyle="#222";
+  ctx.beginPath();ctx.moveTo(padding,y);ctx.lineTo(c.clientWidth-padding,y);ctx.stroke();
+  ctx.fillText(val.toFixed(0),10,y+4);
+ }
+
+ const gap=w/(chartData.length-1);
+ lastLabels.forEach((lab,i)=>{
+  const x=padding+i*gap;
+  ctx.strokeStyle="#222";
+  ctx.beginPath();ctx.moveTo(x,padding);ctx.lineTo(x,c.clientHeight-padding);ctx.stroke();
+  ctx.fillText(lab,x-15,c.clientHeight-20);
+ });
+
+ ctx.strokeStyle="#ff8800";
+ ctx.beginPath();
+chartData.forEach((v,i)=>{
+  const x = padding + i*gap;   // ← 追加
+  const y =
+    padding + priceHeight
+    - ((v-min)/range)*priceHeight;
+
+  if(i===0) ctx.moveTo(x,y);
+  else ctx.lineTo(x,y);
+});
+ ctx.stroke();
+ /* ===== 出来高バー描画 ===== */
+
+const maxVolume=Math.max(...volumeData);
+
+volumeData.forEach((vol,i)=>{
+
+  const barWidth=gap*0.6;
+  const x=padding+i*gap-barWidth/2;
+
+  const barHeight=
+    (vol/maxVolume)*volumeHeight;
+
+  const y=
+    padding+priceHeight
+    + (volumeHeight-barHeight);
+
+  // 上昇・下落色分け
+  if(i>0 && chartData[i]>=chartData[i-1]){
+    ctx.fillStyle="#00aa55";
+  }else{
+    ctx.fillStyle="#aa3333";
+  }
+
+  ctx.fillRect(x,y,barWidth,barHeight);
+});
+ 
+}
+
+window.addEventListener("resize",()=>drawChart());
+loadStock();
+setInterval(loadStock,60000);
+
+/* ===== 天気 ===== */
+function getWeatherIcon(code){
+ if(code===0)return"☀️";
+ if(code===1)return"🌤";
+ if(code===2)return"⛅";
+ if(code===3)return"☁️";
+ if(code>=45 && code<=48)return"🌫";
+ if(code>=51 && code<=57)return"🌦";
+ if(code>=61 && code<=67)return"🌧";
+ if(code>=71 && code<=77)return"❄️";
+ if(code>=80 && code<=82)return"🌧";
+ if(code>=95)return"⛈";
+ return"☁️";
+}
+
+async function loadWeather(){
+ try{
+  const url="https://api.open-meteo.com/v1/forecast?latitude=34.70&longitude=135.70&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FTokyo";
+  const res=await fetch(url);
+  const j=await res.json();
+
+  const week=["日","月","火","水","木","金","土"];
+
+  const todayDate=new Date(j.daily.time[0]);
+  const todayLabel=
+   (todayDate.getMonth()+1)+"/"+
+   todayDate.getDate()+
+   "（"+week[todayDate.getDay()]+"）";
+
+  weatherToday.innerHTML=
+   `<span style="font-size:2.2em;">${getWeatherIcon(j.daily.weathercode[0])}</span> ${todayLabel}<br>
+   最高気温 ${j.daily.temperature_2m_max[0]}℃<br>
+   最低気温 ${j.daily.temperature_2m_min[0]}℃<br>
+   降水確率 ${j.daily.precipitation_probability_max[0]}%`;
+
+  let wk="";
+  for(let i=1;i<7;i++){
+   const d=new Date(j.daily.time[i]);
+   const label=
+    (d.getMonth()+1)+"/"+
+    d.getDate()+
+    "（"+week[d.getDay()]+"）";
+
+   wk+=`<div class='dailyItem'>
+   ${getWeatherIcon(j.daily.weathercode[i])}
+   ${label}
+   ${j.daily.temperature_2m_max[i]}℃ /
+   ${j.daily.temperature_2m_min[i]}℃
+   ${j.daily.precipitation_probability_max[i]}%
+   </div>`;
+  }
+  weatherWeekly.innerHTML=wk;
+
+ }catch(e){
+  weatherToday.innerText="天気取得エラー";
+ }
+}
+loadWeather();
+setInterval(loadWeather,3600000);
+
+/* ===== ニュース（完全分離型プロ仕様） ===== */
+
+const alertWords = [
+  "日銀","円安","円高","利上げ","利下げ",
+  "株安","株高","為替介入","インフレ"
+];
+
+function highlightWords(text){
+  alertWords.forEach(word=>{
+    const reg = new RegExp(word,"g");
+    text = text.replace(
+      reg,
+      `<span style="color:#ff3333;font-weight:bold;">${word}</span>`
+    );
+  });
+  return text;
+}
+
+async function loadNews(){
+
+  const generalURL =
+   "https://api.rss2json.com/v1/api.json?rss_url=https://www.nhk.or.jp/rss/news/cat0.xml";
+
+  const economyURL =
+   "https://api.rss2json.com/v1/api.json?rss_url=https://www.nhk.or.jp/rss/news/cat5.xml";
+
+  let generalItems = [];
+  let economyItems = [];
+
+  /* ===== 総合ニュース取得 ===== */
+  try{
+    const res = await fetch(generalURL);
+    if(res.ok){
+      const json = await res.json();
+      if(Array.isArray(json.items)){
+        generalItems = json.items;
+      }
+    }
+  }catch(e){
+    console.log("General news failed:", e);
+  }
+
+  /* ===== 経済ニュース取得 ===== */
+  try{
+    const res = await fetch(economyURL);
+    if(res.ok){
+      const json = await res.json();
+      if(Array.isArray(json.items)){
+        economyItems = json.items;
+      }
+    }
+  }catch(e){
+    console.log("Economy news failed:", e);
+  }
+
+  /* ===== 描画処理 ===== */
+    /* ===== 描画処理 ===== */
+
+  newsGeneral.innerHTML = "";
+  newsEconomy.innerHTML = "";
+
+  let tickerCombined = "";
+
+  /* --- 総合 --- */
+  if(generalItems.length){
+    generalItems.slice(0,4).forEach(n=>{
+      newsGeneral.innerHTML +=
+        `<div class="newsItem">▶ ${highlightWords(n.title)}</div>`;
+      tickerCombined += " ◆ " + n.title;
+    });
+  }else{
+    newsGeneral.innerHTML =
+      `<div class="newsItem">総合ニュース取得失敗</div>`;
+  }
+
+  /* --- 経済 --- */
+  if(economyItems.length){
+    economyItems.slice(0,4).forEach(n=>{
+      newsEconomy.innerHTML +=
+        `<div class="newsItem">💹 ${highlightWords(n.title)}</div>`;
+      tickerCombined += " ◆ " + n.title;
+    });
+  }else{
+    newsEconomy.innerHTML =
+      `<div class="newsItem">経済ニュース取得失敗</div>`;
+  }
+
+  tickerNews = tickerCombined;
+  updateTicker();
+ newsUpdatedGeneral.innerText =
+  "UPDATED " + getNowTime() ;
+
+newsUpdatedEconomy.innerText =
+  "UPDATED " + getNowTime(); 
+}
+
+loadNews();
+setInterval(loadNews,300000);
+
+</script>
+</body>
+</html>
