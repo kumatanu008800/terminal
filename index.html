@@ -116,22 +116,32 @@ canvas{
 .newsItem{border-bottom:1px solid #222;padding:6px 0;font-size:14px;}
 .dailyItem{border-bottom:1px solid #222;padding:4px 0;font-size:14px;}
 
+
 #ticker{
   height:50px;
   background:#111;
   border-top:2px solid #ff8800;
   overflow:hidden;
-  white-space:nowrap;
+  position:relative;
 }
-#tickerText{
-  display:inline-block;
-  padding-left:100%;
+
+#tickerTrack{
+  display:flex;
+  width:max-content;
+  animation:tickerScroll linear infinite;
+  animation-duration:60s; /* ← 仮の初期値 */
+}
+
+.tickerContent{
+  white-space:nowrap;
+  padding-right:100px;
   color:#ff8800;
   font-weight:bold;
 }
-@keyframes ticker{
-  from{transform:translateX(0);}
-  to{transform:translateX(-100%);}
+
+@keyframes tickerScroll{
+  from{ transform:translateX(0); }
+  to{ transform:translateX(-50%); }
 }
 
 @media (orientation: landscape){
@@ -207,7 +217,12 @@ canvas{
 
 </div>
 
-<div id="ticker"><div id="tickerText">LOADING...</div></div>
+<div id="ticker">
+  <div id="tickerTrack">
+    <div class="tickerContent" id="tickerText1"></div>
+    <div class="tickerContent" id="tickerText2"></div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -227,8 +242,21 @@ const newsUpdatedGeneral =
 
 const newsUpdatedEconomy =
   document.getElementById("newsUpdatedEconomy");
-const tickerText=document.getElementById("tickerText");
+const tickerText1=document.getElementById("tickerText1");
+const tickerText2=document.getElementById("tickerText2");
+const tickerTrack = document.getElementById("tickerTrack");
 
+function adjustTickerSpeed(){
+  requestAnimationFrame(()=>{
+
+    const width = tickerTrack.scrollWidth / 2;
+    const speed = 80; // 80px/秒
+    const duration = width / speed;
+
+    tickerTrack.style.animationDuration = duration + "s";
+
+  });
+}
 /* ===== 左メニュー日付 ===== */
 const now=new Date();
 const week=["日","月","火","水","木","金","土"];
@@ -274,25 +302,12 @@ setInterval(()=>{
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
 function updateTicker(){
+  const fullText = tickerFX + tickerNews;
+  tickerText1.innerHTML = fullText;
+  tickerText2.innerHTML = fullText;
 
-  const fullText =
-    "◆ " + tickerFX +
-    " ◆ " + tickerStock +
-    (tickerNews ? tickerNews : "");
+  adjustTickerSpeed(); // ← この1行を追加
 
-  tickerText.innerHTML = fullText;
-
-  /* ==== 文字数に応じて速度自動調整 ==== */
-
-  const length = fullText.length;
-
-  // 1文字あたり0.12秒（好みで0.1〜0.15調整可）
-  const duration = Math.max(15, length * 0.12);
-
-  tickerText.style.animation = "none";
-  void tickerText.offsetWidth; // 再描画トリガー
-  tickerText.style.animation =
-    `ticker ${duration}s linear infinite`;
 }
 /* ===== USDJPY 直前更新比 ===== */
 
