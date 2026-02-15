@@ -168,6 +168,8 @@ canvas{
 <div id="ac_price">取得中…</div>
 <div class="updatedTime" id="stockUpdated"></div>
 <canvas id="chart"></canvas>
+
+
 </div>
 </div>
 
@@ -343,6 +345,18 @@ async function loadFX(){
 bigfx.innerHTML =
   `USD/JPY <span id="price">${latest.toFixed(3)}</span>`
   + (changeHTML ? "<br>"+changeHTML : "");
+  
+  /* ===== オルカン推算表示 ===== */
+
+if(orukanEstimated !== null){
+
+  bigfx.innerHTML +=
+    `<br><span style="font-size:0.35em;color:#00ffff;">
+     オルカン推算 ${orukanEstimated.toFixed(0)}円
+     (${orukanDiff>=0?"+":""}${orukanDiff.toFixed(0)}円
+     ${orukanDiffPercent>=0?"+":""}${orukanDiffPercent.toFixed(2)}%)
+     </span>`;
+}
 
 const priceEl = document.getElementById("price");
 
@@ -381,7 +395,12 @@ setInterval(loadFX,60000);
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
-
+/* ===== オルカン推算用 ===== */
+/* ===== オルカン係数方式 ===== */
+const ORUKAN_COEF = 1.275; // ← 固定係数（これだけ）
+let orukanEstimated = null;
+let orukanDiff = null;
+let orukanDiffPercent = null;
 async function loadStock(){
  try{
 
@@ -433,6 +452,25 @@ async function loadStock(){
 
   const latest = prices.at(-1);
   const prev   = prices.at(-2);
+/* ===== 上級版① 3日平均変化率方式 ===== */
+
+
+
+/* ===== 推算 ===== */
+
+orukanEstimated = latest * ORUKAN_COEF;
+
+const prevOrukan = prev * ORUKAN_COEF;
+
+orukanDiff = orukanEstimated - prevOrukan;
+
+orukanDiffPercent =
+  (orukanDiff / prevOrukan) * 100;
+  
+  /* ===== 自己学習型 係数微調整 ===== */
+
+
+// 今日の推算値を保存
 
   const change = ((latest - prev) / prev) * 100;
 
@@ -448,6 +486,14 @@ async function loadStock(){
     `2559.T ${latest.toFixed(0)}
      <span style="color:${change>=0?"#00ff66":"#ff3333"}">
      ${change>=0?"▲":"▼"}${Math.abs(change).toFixed(2)}%</span>`;
+
+if(orukanEstimated !== null){
+
+  tickerStock +=
+    ` ◆ ｵﾙｶﾝ推算 ${orukanEstimated.toFixed(0)}
+     <span style="color:${orukanDiff>=0?"#00ff66":"#ff3333"}">
+     ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
+}
 
   updateTicker();
 
