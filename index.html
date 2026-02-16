@@ -86,6 +86,26 @@ body{display:flex;height:100dvh;overflow:hidden;}
   transition:all .2s ease-out;
 }
 
+/* ===== 桁だけ点滅 ===== */
+
+.digitUp{
+  color:#00ff66;
+  background:#002b00;
+  animation:digitFlash 0.4s ease;
+}
+
+.digitDown{
+  color:#ff3333;
+  background:#2b0000;
+  animation:digitFlash 0.4s ease;
+}
+
+@keyframes digitFlash{
+  0%{opacity:0.3;}
+  100%{opacity:1;}
+}
+
+
 .fxChangeUp{color:#00ff66;}
 .fxChangeDown{color:#ff3333;}
 
@@ -166,21 +186,29 @@ canvas{
 <div id="pages">
 
 <div id="page_clock" class="page active">
-<div class="panel" style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
-<div class="bigFX" id="bigfx">USD/JPY 取得中…</div>
-<div class="updatedTime" id="fxUpdated"></div>
-</div>
-</div>
+  <div class="panel" style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
 
+    <div class="bigFX">
+      USD/JPY <span id="price">取得中…</span>
+    </div>
+
+    <div id="fxInfo"></div>
+    <div id="orukanInfo"></div>
+
+    <div class="updatedTime" id="fxUpdated"></div>
+    </div>
+</div>
 <div id="page_stock" class="page">
-<div class="panel">
-<div style="color:#ff8800;margin-bottom:10px;">MAXIS 全世界株式（オール・カントリー）</div>
-<div id="ac_price">取得中…</div>
-<div class="updatedTime" id="stockUpdated"></div>
-<canvas id="chart"></canvas>
+  <div class="panel">
+    <div style="color:#ff8800;margin-bottom:10px;">
+      MAXIS 全世界株式（オール・カントリー）
+    </div>
 
+    <div id="ac_price">取得中…</div>
+    <div class="updatedTime" id="stockUpdated"></div>
 
-</div>
+    <canvas id="chart"></canvas>
+  </div>
 </div>
 
 <div id="page_weather" class="page">
@@ -229,7 +257,7 @@ canvas{
 /* ===== DOM取得 ===== */
 const bootdate=document.getElementById("bootdate");
 const clock=document.getElementById("clock");
-const bigfx=document.getElementById("bigfx");
+
 const fxUpdated=document.getElementById("fxUpdated");
 const ac_price=document.getElementById("ac_price");
 const stockUpdated=document.getElementById("stockUpdated");
@@ -314,6 +342,10 @@ const fullText = tickerFX + tickerStock + tickerNews;
 let lastFX = null;
 let baseFX = null; // 起動時レート
 
+let simulatedFX = null;   // 疑似表示用
+let simulationTimer = null;
+let previousDisplayPrice = null;
+
 async function loadFX(){
   try{
 
@@ -326,6 +358,18 @@ async function loadFX(){
     if(!data.rates || !data.rates.JPY) throw "API error";
 
     const latest = data.rates.JPY;
+    
+    // API値を基準にする
+simulatedFX = latest;
+
+// 既存タイマー停止
+//if(simulationTimer){
+//  clearInterval(simulationTimer);
+//}
+
+// 疑似変動スタート（1秒ごと）
+//simulationTimer = setInterval(simulateFXMove, 1000);
+    
 
 // 起動時レート保存
 if(baseFX === null){
@@ -392,12 +436,8 @@ if(baseFX !== null){
 }
 
 
-bigfx.innerHTML =
-  `USD/JPY <span id="price">${latest.toFixed(3)}</span>`
-  + (changeHTML ? "<br>"+changeHTML : "")
-  + sinceStartHTML;
   
-  /* ===== オルカン推算表示 ===== */
+/* ===== オルカン推算表示 ===== */
 if(orukanEstimated !== null){
 
   const up = orukanDiff > 0;
@@ -410,15 +450,14 @@ if(orukanEstimated !== null){
   const arrow = up ? "▲" :
                 down ? "▼" : "－";
 
-  bigfx.innerHTML +=
-    `<div class="bigFX">
-      オルカン推算 ${orukanEstimated.toFixed(0)}
-      <br>
-      <span style="font-size:6vw;color:${color};">
-        ${arrow}${Math.abs(orukanDiff).toFixed(0)}
-        (${Math.abs(orukanDiffPercent).toFixed(2)}%)
-      </span>
-     </div>`;
+  document.getElementById("orukanInfo").innerHTML =
+  `<div class="bigFX">
+     オルカン推算 ${orukanEstimated.toFixed(0)}
+   </div>
+<div style="font-size:6vw;color:${color};font-weight:bold;text-align:center;width:100%;">
+     ${arrow}${Math.abs(orukanDiff).toFixed(0)}
+     (${Math.abs(orukanDiffPercent).toFixed(2)}%)
+   </div>`;
 }
 
 const priceEl = document.getElementById("price");
@@ -438,8 +477,15 @@ if(priceEl && lastFX !== null){
   },350);
 }
 
-    tickerFX =
-      `USD/JPY ${latest.toFixed(3)} ${tickerMove}`;
+const displayPrice =
+  simulatedFX !== null
+    ? simulatedFX.toFixed(3)
+    : latest.toFixed(3);
+
+document.getElementById("price").innerText = displayPrice;
+
+tickerFX =
+  `USD/JPY ${displayPrice} ${tickerMove}`;
 
     updateTicker();
     fxUpdated.innerText = "UPDATED " + getNowTime();
@@ -448,9 +494,78 @@ if(priceEl && lastFX !== null){
 
   }catch(e){
     console.error(e);
-    bigfx.innerHTML="USD/JPY<br>取得エラー";
+document.getElementById("price").innerText = "取得エラー";
     fxUpdated.innerText="ERROR "+getNowTime();
   }
+}
+
+function simulateFXMove(){
+
+  if(simulatedFX === null) return;
+
+  const prev = simulatedFX;
+
+  const move = (Math.random() - 0.5) * 0.006;
+  simulatedFX += move;
+
+// 起動時からの変化に変更
+const change = simulatedFX - baseFX;
+const percent = (change / baseFX) * 100;
+
+  const up = change > 0;
+  const down = change < 0;
+
+  const color = up ? "#00ff66" :
+                down ? "#ff3333" :
+                "#ffffff";
+
+  const arrow = up ? "▲" :
+                down ? "▼" : "－";
+
+  const priceEl = document.getElementById("price");
+
+if(priceEl){
+
+  const newPrice = simulatedFX.toFixed(3);
+
+  if(previousDisplayPrice === null){
+    priceEl.innerText = newPrice;
+  }else{
+
+    let html = "";
+
+    for(let i=0;i<newPrice.length;i++){
+
+      const newChar = newPrice[i];
+      const oldChar = previousDisplayPrice[i];
+
+      if(newChar !== oldChar && newChar !== "."){
+
+html += `<span class="${
+  simulatedFX > prev
+    ? "digitUp"
+    : "digitDown"
+}">${newChar}</span>`;
+
+      }else{
+        html += newChar;
+      }
+    }
+
+    priceEl.innerHTML = html;
+  }
+
+  previousDisplayPrice = newPrice;
+}
+
+  tickerFX =
+    `USD/JPY ${simulatedFX.toFixed(3)}
+     <span style="color:${color}">
+     ${arrow}${Math.abs(change).toFixed(3)}
+     (${Math.abs(percent).toFixed(3)}%)
+     </span>`;
+
+  updateTicker();
 }
 
 loadFX();
@@ -666,6 +781,8 @@ setInterval(loadStock,60000);
 /* ===== 天気（GPS対応＋フォールバック） ===== */
 
 function getWeatherIcon(code){
+
+
  if(code===0)return"☀️";
  if(code===1)return"🌤";
  if(code===2)return"⛅";
@@ -679,6 +796,35 @@ function getWeatherIcon(code){
  return"☁️";
 }
 
+async function getLocationName(lat, lon){
+  try{
+    const url =
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
+
+    const res = await fetch(url, {
+      headers: { "Accept-Language": "ja" }
+    });
+
+    const data = await res.json();
+
+    if(data.address){
+      return (
+        data.address.city ||
+        data.address.town ||
+        data.address.village ||
+        data.address.state ||
+        "現在地"
+      );
+    }
+
+    return "現在地";
+
+  }catch(e){
+    return "現在地";
+  }
+}
+
+
 async function loadWeather(){
 
   if(!navigator.geolocation){
@@ -687,11 +833,18 @@ async function loadWeather(){
   }
 
   navigator.geolocation.getCurrentPosition(
-    pos=>{
+    async pos=>{
+
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      const locationName =
+        await getLocationName(lat, lon);
+
       loadWeatherByCoords(
-        pos.coords.latitude,
-        pos.coords.longitude,
-        "現在地（低精度）"
+        lat,
+        lon,
+        locationName
       );
     },
     ()=>{
@@ -699,16 +852,6 @@ async function loadWeather(){
     }
   );
 }
-
-function loadDefaultWeather(){
-  // 奈良県生駒市あすか野南
-  loadWeatherByCoords(
-    34.69,
-    135.70,
-    "奈良県生駒市あすか野南"
-  );
-}
-
 async function loadWeatherByCoords(lat,lon,label){
 
  try{
