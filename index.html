@@ -350,86 +350,50 @@ async function loadFX(){
   try{
 
     const baseURL =
-       "https://query2.finance.yahoo.com/v8/finance/chart/USDJPY=X?range=1d&interval=1m";
+      "https://query2.finance.yahoo.com/v8/finance/chart/USDJPY=X?range=1d&interval=1m";
 
     const proxy =
       "https://api.allorigins.win/raw?url=" +
       encodeURIComponent(baseURL);
 
-    const res = await fetch(proxy, { cache:"no-store" });
-
+    const res = await fetch(proxy,{cache:"no-store"});
     if(!res.ok) throw "HTTP ERROR";
 
     const data = await res.json();
 
-    const quote = data.quoteResponse.result[0];
-    if(!quote) throw "DATA ERROR";
+    if(!data.chart?.result?.[0])
+      throw "DATA ERROR";
 
-    const latest = quote.regularMarketPrice;
+    const result = data.chart.result[0];
+
+    const closes =
+      result.indicators.quote[0].close;
+
+    const latest =
+      closes.filter(v=>v!==null).at(-1);
 
     if(!latest) throw "PRICE ERROR";
 
-    // 起動時レート保存
-    if(baseFX === null){
-      baseFX = latest;
-    }
+    /* ===== 表示 ===== */
 
-    let changeHTML = "";
-    let tickerMove = "";
+    const displayPrice =
+      Number(latest).toFixed(3);
 
-    if(lastFX !== null){
-
-      const change = latest - lastFX;
-      const percent = (change / lastFX) * 100;
-
-      const up = change > 0;
-      const down = change < 0;
-
-      const color = up ? "#00ff66" :
-                    down ? "#ff3333" :
-                    "#ffffff";
-
-      const arrow = up ? "▲" :
-                    down ? "▼" : "－";
-
-      changeHTML =
-        `<span style="font-size:18px;color:${color}">
-         前回比 ${change>=0?"+":""}${change.toFixed(3)}
-         (${percent>=0?"+":""}${percent.toFixed(2)}%)
-         </span>`;
-    }
-
-    const priceEl = document.getElementById("price");
-
-    if(priceEl && lastFX !== null){
-
-      priceEl.classList.remove("priceFlashUp","priceFlashDown");
-
-      if(latest > lastFX){
-        priceEl.classList.add("priceFlashUp");
-      }else if(latest < lastFX){
-        priceEl.classList.add("priceFlashDown");
-      }
-
-      setTimeout(()=>{
-        priceEl.classList.remove("priceFlashUp","priceFlashDown");
-      },350);
-    }
-
-    const displayPrice = latest.toFixed(3);
-    document.getElementById("price").innerText = displayPrice;
+    document.getElementById("price")
+      .innerText = displayPrice;
 
     tickerFX = `USD/JPY ${displayPrice}`;
     updateTicker();
 
-    fxUpdated.innerText = "UPDATED " + getNowTime();
-
-    lastFX = latest;
+    fxUpdated.innerText =
+      "UPDATED " + getNowTime();
 
   }catch(e){
     console.error(e);
-    document.getElementById("price").innerText = "取得エラー";
-    fxUpdated.innerText="ERROR "+getNowTime();
+    document.getElementById("price")
+      .innerText = "取得エラー";
+    fxUpdated.innerText =
+      "ERROR " + getNowTime();
   }
 }
 
