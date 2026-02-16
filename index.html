@@ -325,7 +325,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},60000);
+},80000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -349,49 +349,30 @@ let previousDisplayPrice = null;
 async function loadFX(){
   try{
 
-    const API_KEY = "DLUW6APILUT2HXWV";
+    const baseURL =
+      "https://query2.finance.yahoo.com/v7/finance/quote?symbols=USDJPY=X";
 
-    const url =
-      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=JPY&apikey=${API_KEY}`;
+    const proxy =
+      "https://api.allorigins.win/raw?url=" +
+      encodeURIComponent(baseURL);
 
-const proxy =
-  "https://corsproxy.io/?" + encodeURIComponent(url);
+    const res = await fetch(proxy, { cache:"no-store" });
 
-const res = await fetch(proxy, { cache:"no-store" });
+    if(!res.ok) throw "HTTP ERROR";
 
     const data = await res.json();
-    
-    if(data.Note){
-  throw data.Note;
-}
 
-if(data.Information){
-  throw data.Information;
-}
+    const quote = data.quoteResponse.result[0];
+    if(!quote) throw "DATA ERROR";
 
-    if(!data["Realtime Currency Exchange Rate"])
-      throw "API error";
+    const latest = quote.regularMarketPrice;
 
-    const latest = parseFloat(
-      data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
-    );
-    
-    // API値を基準にする
-simulatedFX = latest;
+    if(!latest) throw "PRICE ERROR";
 
-// 既存タイマー停止
-//if(simulationTimer){
-//  clearInterval(simulationTimer);
-//}
-
-// 疑似変動スタート（1秒ごと）
-//simulationTimer = setInterval(simulateFXMove, 1000);
-    
-
-// 起動時レート保存
-if(baseFX === null){
-  baseFX = latest;
-}
+    // 起動時レート保存
+    if(baseFX === null){
+      baseFX = latest;
+    }
 
     let changeHTML = "";
     let tickerMove = "";
@@ -416,108 +397,40 @@ if(baseFX === null){
          前回比 ${change>=0?"+":""}${change.toFixed(3)}
          (${percent>=0?"+":""}${percent.toFixed(2)}%)
          </span>`;
-
-      
     }
 
-let sinceStartHTML = "";
+    const priceEl = document.getElementById("price");
 
-if(baseFX !== null){
+    if(priceEl && lastFX !== null){
 
-  const diffFromStart = latest - baseFX;
-  const percentFromStart = (diffFromStart / baseFX) * 100;
+      priceEl.classList.remove("priceFlashUp","priceFlashDown");
 
-  const up = diffFromStart > 0;
-  const down = diffFromStart < 0;
+      if(latest > lastFX){
+        priceEl.classList.add("priceFlashUp");
+      }else if(latest < lastFX){
+        priceEl.classList.add("priceFlashDown");
+      }
 
-  const color = up ? "#00ff66" :
-                down ? "#ff3333" :
-                "#ffffff";
+      setTimeout(()=>{
+        priceEl.classList.remove("priceFlashUp","priceFlashDown");
+      },350);
+    }
 
-  const arrow = up ? "▲" :
-                down ? "▼" : "－";
+    const displayPrice = latest.toFixed(3);
+    document.getElementById("price").innerText = displayPrice;
 
-  sinceStartHTML =
-  `<br>
-   <span style="font-size:18px;color:${color}">
-   起動後 ${diffFromStart>=0?"+":""}${diffFromStart.toFixed(3)}
-   (${percentFromStart>=0?"+":""}${percentFromStart.toFixed(2)}%)
-   </span>`;
-   
-   tickerMove =
-  `<span style="color:${color}">
-   ${arrow}${Math.abs(diffFromStart).toFixed(3)}
-   (${Math.abs(percentFromStart).toFixed(2)}%)
-   </span>`;
-   
-}
-
-
-  
-/* ===== オルカン推算表示 ===== */
-if(orukanEstimated !== null){
-
-  const up = orukanDiff > 0;
-  const down = orukanDiff < 0;
-
-  const color = up ? "#00ff66" :
-                down ? "#ff3333" :
-                "#ffffff";
-
-  const arrow = up ? "▲" :
-                down ? "▼" : "－";
-
-  document.getElementById("orukanInfo").innerHTML =
-  `<div class="bigFX">
-     オルカン推算 ${orukanEstimated.toFixed(0)}
-   </div>
-<div style="font-size:6vw;color:${color};font-weight:bold;text-align:center;width:100%;">
-     ${arrow}${Math.abs(orukanDiff).toFixed(0)}
-     (${Math.abs(orukanDiffPercent).toFixed(2)}%)
-   </div>`;
-}
-
-const priceEl = document.getElementById("price");
-
-if(priceEl && lastFX !== null){
-
-  priceEl.classList.remove("priceFlashUp","priceFlashDown");
-
-  if(latest > lastFX){
-    priceEl.classList.add("priceFlashUp");
-  }else if(latest < lastFX){
-    priceEl.classList.add("priceFlashDown");
-  }
-
-  setTimeout(()=>{
-    priceEl.classList.remove("priceFlashUp","priceFlashDown");
-  },350);
-}
-
-const displayPrice =
-  simulatedFX !== null
-    ? simulatedFX.toFixed(3)
-    : latest.toFixed(3);
-
-document.getElementById("price").innerText = displayPrice;
-
-tickerFX =
-  `USD/JPY ${displayPrice} ${tickerMove}`;
-
+    tickerFX = `USD/JPY ${displayPrice}`;
     updateTicker();
+
     fxUpdated.innerText = "UPDATED " + getNowTime();
 
     lastFX = latest;
-}catch(e){
 
-  document.getElementById("price").innerText = "取得エラー";
-
-  // APIの中身を画面表示
-  fxUpdated.innerText =
-    "ERROR " + getNowTime() + " " +
-    (typeof e === "string" ? e : JSON.stringify(e));
-
-}
+  }catch(e){
+    console.error(e);
+    document.getElementById("price").innerText = "取得エラー";
+    fxUpdated.innerText="ERROR "+getNowTime();
+  }
 }
 
 function simulateFXMove(){
@@ -590,7 +503,7 @@ html += `<span class="${
 }
 
 loadFX();
-setInterval(loadFX,240000);
+setInterval(loadFX,15000);
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
@@ -616,14 +529,6 @@ async function loadStock(){
   if(!res.ok) throw "HTTP ERROR";
 
   const json = await res.json();
-
-if(json.Note){
-  throw json.Note;
-}
-
-if(json.Information){
-  throw json.Information;
-}
   if(!json.chart?.result?.[0]) throw "DATA ERROR";
 
   const result = json.chart.result[0];
