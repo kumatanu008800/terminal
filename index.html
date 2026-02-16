@@ -325,7 +325,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},8000);
+},80000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -781,8 +781,6 @@ setInterval(loadStock,60000);
 /* ===== 天気（GPS対応＋フォールバック） ===== */
 
 function getWeatherIcon(code){
-
-
  if(code===0)return"☀️";
  if(code===1)return"🌤";
  if(code===2)return"⛅";
@@ -796,35 +794,6 @@ function getWeatherIcon(code){
  return"☁️";
 }
 
-async function getLocationName(lat, lon){
-  try{
-    const url =
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`;
-
-    const res = await fetch(url, {
-      headers: { "Accept-Language": "ja" }
-    });
-
-    const data = await res.json();
-
-    if(data.address){
-      return (
-        data.address.city ||
-        data.address.town ||
-        data.address.village ||
-        data.address.state ||
-        "現在地"
-      );
-    }
-
-    return "現在地";
-
-  }catch(e){
-    return "現在地";
-  }
-}
-
-
 async function loadWeather(){
 
   if(!navigator.geolocation){
@@ -833,18 +802,11 @@ async function loadWeather(){
   }
 
   navigator.geolocation.getCurrentPosition(
-    async pos=>{
-
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-
-      const locationName =
-        await getLocationName(lat, lon);
-
+    pos=>{
       loadWeatherByCoords(
-        lat,
-        lon,
-        locationName
+        pos.coords.latitude,
+        pos.coords.longitude,
+        "現在地（低精度）"
       );
     },
     ()=>{
@@ -852,6 +814,16 @@ async function loadWeather(){
     }
   );
 }
+
+function loadDefaultWeather(){
+  // 奈良県生駒市あすか野南
+  loadWeatherByCoords(
+    34.69,
+    135.70,
+    "奈良県生駒市あすか野南"
+  );
+}
+
 async function loadWeatherByCoords(lat,lon,label){
 
  try{
