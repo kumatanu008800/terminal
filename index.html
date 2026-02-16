@@ -71,7 +71,13 @@ body{display:flex;height:100dvh;overflow:hidden;}
   text-align:center;
   width:100%;
 }
-
+.bigOrukan{
+  font-size:10vw;
+  font-weight:bold;
+  text-align:center;
+  width:100%;
+  color:#ff8800;   /* ← USDと同じ色にする */
+}
 .priceFlashUp{
   color:#00ff66 !important;
   background:#002b00;
@@ -193,7 +199,7 @@ canvas{
     </div>
 
     <div id="fxInfo"></div>
-    <div id="orukanInfo"></div>
+<div class="bigOrukan" id="orukanInfo"></div>
 
     <div class="updatedTime" id="fxUpdated"></div>
     </div>
@@ -373,6 +379,11 @@ const proxy =
       closes.filter(v=>v!==null).at(-1);
 
     if(!latest) throw "PRICE ERROR";
+    
+    if(baseFX === null){
+  baseFX = latest;   // ← 起動時価格を保存
+  simulatedFX = latest;  // 疑似用にもセット
+}
 
     /* ===== 表示 ===== */
 
@@ -384,6 +395,35 @@ const proxy =
 
     tickerFX = `USD/JPY ${displayPrice}`;
     updateTicker();
+
+/* ===== ★ここに追加する ===== */
+
+if(baseFX !== null){
+
+  const diff = latest - baseFX;
+  const percent = (diff / baseFX) * 100;
+
+  const up = diff > 0;
+  const down = diff < 0;
+
+  const color = up ? "#00ff66" :
+                down ? "#ff3333" :
+                "#ffffff";
+
+  const arrow = up ? "▲" :
+                down ? "▼" : "－";
+
+  document.getElementById("fxInfo").innerHTML =
+    `<span style="color:${color};font-size:28px;font-weight:bold;">
+      ${arrow}${Math.abs(percent).toFixed(3)}%
+     </span>
+     <span style="color:#888;font-size:16px;">
+      
+     </span>`;
+}
+
+/* ===== ★ここまで ===== */
+
 
     fxUpdated.innerText =
       "UPDATED " + getNowTime();
@@ -542,6 +582,24 @@ orukanDiff = orukanEstimated - prevOrukan;
 
 orukanDiffPercent =
   (orukanDiff / prevOrukan) * 100;
+  
+  /* ===== オルカン大表示 ===== */
+
+const orukanEl = document.getElementById("orukanInfo");
+
+if(orukanEl && orukanEstimated !== null){
+
+  const up = orukanDiff >= 0;
+
+  const color = up ? "#00ff66" : "#ff3333";
+  const arrow = up ? "▲" : "▼";
+
+orukanEl.innerHTML =
+  `ｵﾙｶﾝ推算 ${orukanEstimated.toFixed(0)}
+   <span style="color:${color}">
+   ${arrow}${Math.abs(orukanDiffPercent).toFixed(2)}%
+   </span>`;
+}
   
   /* ===== 自己学習型 係数微調整 ===== */
 
