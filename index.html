@@ -317,15 +317,23 @@ let baseFX = null; // 起動時レート
 async function loadFX(){
   try{
 
-    const res = await fetch(
-      "https://open.er-api.com/v6/latest/USD",
-      { cache:"no-store" }
-    );
+    const url =
+  "https://query1.finance.yahoo.com/v7/finance/quote?symbols=JPY=X";
 
-    const data = await res.json();
-    if(!data.rates || !data.rates.JPY) throw "API error";
+const proxy =
+  "https://corsproxy.io/?" + encodeURIComponent(url);
 
-    const latest = data.rates.JPY;
+const res = await fetch(proxy, { cache:"no-store" });
+
+if(!res.ok) throw "HTTP ERROR";
+
+const data = await res.json();
+
+if(!data.quoteResponse?.result?.[0])
+  throw "DATA ERROR";
+
+const latest =
+  data.quoteResponse.result[0].regularMarketPrice;
 
 // 起動時レート保存
 if(baseFX === null){
