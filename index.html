@@ -297,7 +297,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},70000);
+},80000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -312,6 +312,7 @@ const fullText = tickerFX + tickerStock + tickerNews;
 /* ===== USDJPY 直前更新比 ===== */
 
 let lastFX = null;
+let baseFX = null; // 起動時レート
 
 async function loadFX(){
   try{
@@ -325,6 +326,11 @@ async function loadFX(){
     if(!data.rates || !data.rates.JPY) throw "API error";
 
     const latest = data.rates.JPY;
+
+// 起動時レート保存
+if(baseFX === null){
+  baseFX = latest;
+}
 
     let changeHTML = "";
     let tickerMove = "";
@@ -357,9 +363,36 @@ async function loadFX(){
          </span>`;
     }
 
+let sinceStartHTML = "";
+
+if(baseFX !== null){
+
+  const diffFromStart = latest - baseFX;
+  const percentFromStart = (diffFromStart / baseFX) * 100;
+
+  const up = diffFromStart > 0;
+  const down = diffFromStart < 0;
+
+  const color = up ? "#00ff66" :
+                down ? "#ff3333" :
+                "#ffffff";
+
+  const arrow = up ? "▲" :
+                down ? "▼" : "－";
+
+  sinceStartHTML =
+  `<br>
+   <span style="font-size:18px;color:${color}">
+   起動後 ${diffFromStart>=0?"+":""}${diffFromStart.toFixed(3)}
+   (${percentFromStart>=0?"+":""}${percentFromStart.toFixed(2)}%)
+   </span>`;
+}
+
+
 bigfx.innerHTML =
   `USD/JPY <span id="price">${latest.toFixed(3)}</span>`
-  + (changeHTML ? "<br>"+changeHTML : "");
+  + (changeHTML ? "<br>"+changeHTML : "")
+  + sinceStartHTML;
   
   /* ===== オルカン推算表示 ===== */
 if(orukanEstimated !== null){
