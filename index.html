@@ -325,7 +325,7 @@ setInterval(()=>{
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
  if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},8000);
+},60000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -349,15 +349,32 @@ let previousDisplayPrice = null;
 async function loadFX(){
   try{
 
-    const res = await fetch(
-      "https://open.er-api.com/v6/latest/USD",
-      { cache:"no-store" }
-    );
+    const API_KEY = "DLUW6APILUT2HXWV";
+
+    const url =
+      `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=JPY&apikey=${API_KEY}`;
+
+const proxy =
+  "https://corsproxy.io/?" + encodeURIComponent(url);
+
+const res = await fetch(proxy, { cache:"no-store" });
 
     const data = await res.json();
-    if(!data.rates || !data.rates.JPY) throw "API error";
+    
+    if(data.Note){
+  throw data.Note;
+}
 
-    const latest = data.rates.JPY;
+if(data.Information){
+  throw data.Information;
+}
+
+    if(!data["Realtime Currency Exchange Rate"])
+      throw "API error";
+
+    const latest = parseFloat(
+      data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+    );
     
     // API値を基準にする
 simulatedFX = latest;
@@ -491,12 +508,16 @@ tickerFX =
     fxUpdated.innerText = "UPDATED " + getNowTime();
 
     lastFX = latest;
+}catch(e){
 
-  }catch(e){
-    console.error(e);
-document.getElementById("price").innerText = "取得エラー";
-    fxUpdated.innerText="ERROR "+getNowTime();
-  }
+  document.getElementById("price").innerText = "取得エラー";
+
+  // APIの中身を画面表示
+  fxUpdated.innerText =
+    "ERROR " + getNowTime() + " " +
+    (typeof e === "string" ? e : JSON.stringify(e));
+
+}
 }
 
 function simulateFXMove(){
@@ -569,7 +590,7 @@ html += `<span class="${
 }
 
 loadFX();
-setInterval(loadFX,15000);
+setInterval(loadFX,240000);
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
@@ -595,6 +616,14 @@ async function loadStock(){
   if(!res.ok) throw "HTTP ERROR";
 
   const json = await res.json();
+
+if(json.Note){
+  throw json.Note;
+}
+
+if(json.Information){
+  throw json.Information;
+}
   if(!json.chart?.result?.[0]) throw "DATA ERROR";
 
   const result = json.chart.result[0];
