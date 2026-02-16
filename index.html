@@ -352,9 +352,9 @@ async function loadFX(){
     const baseURL =
       "https://query2.finance.yahoo.com/v8/finance/chart/USDJPY=X?range=1d&interval=1m";
 
-    const proxy =
-      "https://api.allorigins.win/raw?url=" +
-      encodeURIComponent(baseURL);
+const proxy =
+  "https://corsproxy.io/?" +
+  encodeURIComponent(baseURL);
 
     const res = await fetch(proxy,{cache:"no-store"});
     if(!res.ok) throw "HTTP ERROR";
