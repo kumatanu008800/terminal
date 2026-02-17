@@ -9,9 +9,9 @@
 html,body{
   margin:0;
   padding:0;
-  background:#000;
-  color:#fff;
-  font-family:"Courier New",monospace;
+background:#0a0a0a;
+color:#e6e6e6;
+font-family:Arial,Helvetica,sans-serif;
   height:100%;
 }
 body{display:flex;height:100dvh;overflow:hidden;}
@@ -19,8 +19,8 @@ body{display:flex;height:100dvh;overflow:hidden;}
 #leftmenu{
   width:60px;
   min-width:60px;
-  background:#070707;
-  border-right:2px solid #ff8800;
+background:#0f0f0f;
+border-right:2px solid #ff9900;
   position:relative;
 }
 #bootdate{
@@ -28,7 +28,7 @@ body{display:flex;height:100dvh;overflow:hidden;}
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  color:#ff8800;
+  color:#ff9900;
   font-size:36px;
   letter-spacing:4px;
   writing-mode:vertical-rl;
@@ -41,13 +41,13 @@ body{display:flex;height:100dvh;overflow:hidden;}
 
 #topbar{
   height:60px;
-  background:#111;
-  border-bottom:2px solid #ff8800;
+background:#141414;
+border-bottom:2px solid #ff9900;
   display:flex;
   align-items:center;
   padding:0 20px;
 }
-#clock{color:#ff8800;font-size:28px;font-weight:bold;}
+#clock{color:#ff9900;font-size:28px;font-weight:bold;}
 
 #bootTime{
   margin-left:auto;
@@ -74,7 +74,7 @@ body{display:flex;height:100dvh;overflow:hidden;}
 
 .bigFX{
   font-size:10vw;
-  color:#ff8800;
+  color:#ff9900;
   font-weight:bold;
   text-align:center;
   width:100%;
@@ -84,7 +84,7 @@ body{display:flex;height:100dvh;overflow:hidden;}
   font-weight:bold;
   text-align:center;
   width:100%;
-  color:#ff8800;
+  color:#ff9900;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -99,28 +99,28 @@ body{display:flex;height:100dvh;overflow:hidden;}
 }
 
 .priceFlashUp{
-  color:#00ff66 !important;
-  text-shadow:0 0 12px rgba(0,255,102,0.8);
+  color:#00ff00 !important;
+  text-shadow:0 0 12px rgba(0,255,0,0.8);
   transition:all .2s ease-out;
 }
 
 .priceFlashDown{
-  color:#ff3333 !important;
-  text-shadow:0 0 12px rgba(255,51,51,0.8);
+  color:#ff0000 !important;
+  text-shadow:0 0 12px rgba(255,0,0,0.8);
   transition:all .2s ease-out;
 }
 
 /* ===== 桁だけ点滅 ===== */
 
 .digitUp{
-  color:#00ff66;
-  text-shadow:0 0 10px rgba(0,255,102,0.9);
+  color:#00ff00;
+  text-shadow:0 0 10px rgba(0,255,0,0.9);
   animation:digitFlash 0.4s ease;
 }
 
 .digitDown{
-  color:#ff3333;
-  text-shadow:0 0 10px rgba(255,51,51,0.9);
+  color:#ff0000;
+  text-shadow:0 0 10px rgba(255,0,0,0.9);
   animation:digitFlash 0.4s ease;
 }
 
@@ -130,12 +130,12 @@ body{display:flex;height:100dvh;overflow:hidden;}
 }
 
 
-.fxChangeUp{color:#00ff66;}
-.fxChangeDown{color:#ff3333;}
+.fxChangeUp{color:#00ff00;}
+.fxChangeDown{color:#ff0000;}
 
 .updatedTime{
   font-size:14px;
-  color:#ff8800;
+  color:#ff9900;
   margin-top:10px;
 }
 .newsHeader{
@@ -146,13 +146,13 @@ body{display:flex;height:100dvh;overflow:hidden;}
 }
 
 .newsTitle{
-  color:#ff8800;
+  color:#ff9900;
   font-size:18px;
   font-weight:bold;
 }
 canvas{
   background:#111;
-  border:1px solid #ff8800;
+  border:1px solid #ff9900;
   width:100%;
   height:300px;
 }
@@ -164,7 +164,7 @@ canvas{
 #ticker{
   height:50px;
   background:#111;
-  border-top:2px solid #ff8800;
+  border-top:2px solid #ff9900;
   overflow:hidden;
   position:relative;
 }
@@ -179,7 +179,7 @@ canvas{
 .tickerContent{
   white-space:nowrap;
   padding-right:100px;
-  color:#ff8800;
+  color:#ff9900;
   font-weight:bold;
 }
 
@@ -232,7 +232,7 @@ canvas{
 </div>
 <div id="page_stock" class="page">
   <div class="panel">
-    <div style="color:#ff8800;margin-bottom:10px;">
+    <div style="color:#ff9900;margin-bottom:10px;">
       MAXIS 全世界株式（オール・カントリー）
     </div>
 
@@ -245,7 +245,7 @@ canvas{
 
 <div id="page_weather" class="page">
 <div class="panel">
-<div style="color:#ff8800;margin-bottom:10px;">
+<div style="color:#ff9900;margin-bottom:10px;">
 週間天気
 </div>
 <div id="weatherToday">取得中…</div>
@@ -294,7 +294,7 @@ const bootTimeEl = document.getElementById("bootTime");
 
 const bootNow = new Date();
 bootTimeEl.innerText =
-  "BOOT " +
+  "LOG " +
   String(bootNow.getHours()).padStart(2,"0")+":"+
   String(bootNow.getMinutes()).padStart(2,"0")+":"+
   String(bootNow.getSeconds()).padStart(2,"0");
@@ -446,9 +446,9 @@ const percent = (diff / baseFX) * 100;
 const up = diff > 0;
 const down = diff < 0;
 
-const color = up ? "#00ff66" :
-              down ? "#ff3333" :
-              "#ffffff";
+const color = up ? "#00ff00" :
+              down ? "#ff0000" :
+              "#e6e6e6";
 
 const arrow = up ? "▲" :
               down ? "▼" : "－";
@@ -469,9 +469,9 @@ if(baseFX !== null){
   const up = diff > 0;
   const down = diff < 0;
 
-  const color = up ? "#00ff66" :
-                down ? "#ff3333" :
-                "#ffffff";
+  const color = up ? "#00ff00" :
+                down ? "#ff0000" :
+                "#e6e6e6";
 
   const arrow = up ? "▲" :
                 down ? "▼" : "－";
@@ -489,7 +489,7 @@ if(baseFX !== null){
 
 
     fxUpdated.innerText =
-      "UPDATED " + getNowTime();
+      "UPD " + getNowTime();
 
   }catch(e){
     console.error(e);
@@ -516,9 +516,9 @@ const percent = (change / baseFX) * 100;
   const up = change > 0;
   const down = change < 0;
 
-  const color = up ? "#00ff66" :
-                down ? "#ff3333" :
-                "#ffffff";
+  const color = up ? "#00ff00" :
+                down ? "#ff0000" :
+                "#e6e6e6";
 
   const arrow = up ? "▲" :
                 down ? "▼" : "－";
@@ -655,7 +655,7 @@ if(orukanEl && orukanEstimated !== null){
 
   const up = orukanDiff >= 0;
 
-  const color = up ? "#00ff66" : "#ff3333";
+  const color = up ? "#00ff00" : "#ff0000";
   const arrow = up ? "▲" : "▼";
 
 orukanEl.querySelector(".orukanPrice").innerText =
@@ -676,22 +676,22 @@ orukanEl.querySelector(".orukanChange").innerHTML =
 
   ac_price.innerHTML =
     latest.toFixed(0)+" 円 "+
-    "<span style='color:"+(change>=0?"#00ff66":"#ff3333")+"'>"+
+    "<span style='color:"+(change>=0?"#00ff00":"#ff0000")+"'>"+
     (change>=0?"+":"")+change.toFixed(2)+"%</span>";
 
   stockUpdated.innerText =
-    "UPDATED "+getNowTime();
+    "UPD "+getNowTime();
 
   tickerStock =
     `2559.T ${latest.toFixed(0)}
-     <span style="color:${change>=0?"#00ff66":"#ff3333"}">
+     <span style="color:${change>=0?"#00ff00":"#ff0000"}">
      ${change>=0?"▲":"▼"}${Math.abs(change).toFixed(2)}%</span>`;
 
 if(orukanEstimated !== null){
 
   tickerStock +=
     ` ◆ 推算ｵﾙｶﾝ ${orukanEstimated.toFixed(0)}
-     <span style="color:${orukanDiff>=0?"#00ff66":"#ff3333"}">
+     <span style="color:${orukanDiff>=0?"#00ff00":"#ff0000"}">
      ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
 }
 
@@ -737,8 +737,8 @@ const volumeHeight=totalHeight*0.3;
  const min=rawMin-paddingRange;
  const range=max-min||1;
 
- ctx.fillStyle="#ff8800";
- ctx.font="12px Courier New";
+ ctx.fillStyle="#ff9900";
+ ctx.font="12px Arial";
 
  for(let i=0;i<=4;i++){
   const val=min+range*(i/4);
@@ -756,7 +756,7 @@ const volumeHeight=totalHeight*0.3;
   ctx.fillText(lab,x-15,c.clientHeight-20);
  });
 
- ctx.strokeStyle="#ff8800";
+ ctx.strokeStyle="#ff9900";
  ctx.beginPath();
 chartData.forEach((v,i)=>{
   const x = padding + i*gap;   // ← 追加
@@ -786,9 +786,9 @@ volumeData.forEach((vol,i)=>{
 
   // 上昇・下落色分け
   if(i>0 && chartData[i]>=chartData[i-1]){
-    ctx.fillStyle="#00aa55";
+    ctx.fillStyle="#00ff00";
   }else{
-    ctx.fillStyle="#aa3333";
+    ctx.fillStyle="#ff0000";
   }
 
   ctx.fillRect(x,y,barWidth,barHeight);
@@ -915,7 +915,7 @@ function highlightWords(text){
     const reg = new RegExp(word,"g");
     text = text.replace(
       reg,
-      `<span style="color:#ff3333;font-weight:bold;">${word}</span>`
+      `<span style="color:#ff0000;font-weight:bold;">${word}</span>`
     );
   });
   return text;
@@ -993,10 +993,10 @@ async function loadNews(){
   tickerNews = tickerCombined;
   updateTicker();
  newsUpdatedGeneral.innerText =
-  "UPDATED " + getNowTime() ;
+  "UPD " + getNowTime() ;
 
 newsUpdatedEconomy.innerText =
-  "UPDATED " + getNowTime(); 
+  "UPD " + getNowTime(); 
 }
 
 loadNews();
