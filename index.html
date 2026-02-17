@@ -659,7 +659,7 @@ if(orukanEl && orukanEstimated !== null){
   const arrow = up ? "▲" : "▼";
 
 orukanEl.querySelector(".orukanPrice").innerText =
-  "ｵﾙｶﾝ推算 " + orukanEstimated.toFixed(0);
+  "推算ｵﾙｶﾝ" + orukanEstimated.toFixed(0);
 
 orukanEl.querySelector(".orukanChange").innerHTML =
   `<span style="color:${color};font-size:28px;font-weight:bold;">
@@ -690,7 +690,7 @@ orukanEl.querySelector(".orukanChange").innerHTML =
 if(orukanEstimated !== null){
 
   tickerStock +=
-    ` ◆ ｵﾙｶﾝ推算 ${orukanEstimated.toFixed(0)}
+    ` ◆ 推算ｵﾙｶﾝ ${orukanEstimated.toFixed(0)}
      <span style="color:${orukanDiff>=0?"#00ff66":"#ff3333"}">
      ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
 }
