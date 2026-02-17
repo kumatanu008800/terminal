@@ -49,6 +49,14 @@ body{display:flex;height:100dvh;overflow:hidden;}
 }
 #clock{color:#ff8800;font-size:28px;font-weight:bold;}
 
+#bootTime{
+  margin-left:auto;
+  color:#666;
+  font-size:14px;
+  font-weight:bold;
+  opacity:0.5;
+}
+
 #pages{position:relative;flex:1;overflow:hidden;}
 
 .page{
@@ -76,19 +84,29 @@ body{display:flex;height:100dvh;overflow:hidden;}
   font-weight:bold;
   text-align:center;
   width:100%;
-  color:#ff8800;   /* ← USDと同じ色にする */
+  color:#ff8800;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
+
+.orukanChange{
+  margin-top:10px;
+}
+
+#fxInfo{
+  margin-top:10px;
+}
+
 .priceFlashUp{
   color:#00ff66 !important;
-  background:#002b00;
-  box-shadow:0 0 16px #00ff66;
+  text-shadow:0 0 12px rgba(0,255,102,0.8);
   transition:all .2s ease-out;
 }
 
 .priceFlashDown{
   color:#ff3333 !important;
-  background:#2b0000;
-  box-shadow:0 0 16px #ff3333;
+  text-shadow:0 0 12px rgba(255,51,51,0.8);
   transition:all .2s ease-out;
 }
 
@@ -96,19 +114,19 @@ body{display:flex;height:100dvh;overflow:hidden;}
 
 .digitUp{
   color:#00ff66;
-  background:#002b00;
+  text-shadow:0 0 10px rgba(0,255,102,0.9);
   animation:digitFlash 0.4s ease;
 }
 
 .digitDown{
   color:#ff3333;
-  background:#2b0000;
+  text-shadow:0 0 10px rgba(255,51,51,0.9);
   animation:digitFlash 0.4s ease;
 }
 
 @keyframes digitFlash{
-  0%{opacity:0.3;}
-  100%{opacity:1;}
+  0%{opacity:0.3; transform:scale(1.05);}
+  100%{opacity:1; transform:scale(1);}
 }
 
 
@@ -174,6 +192,9 @@ canvas{
   .page{flex-direction:column;overflow:auto;}
   canvas{height:250px;}
   .bigFX{font-size:6vw;}
+  .bigOrukan{font-size:6vw;}
+
+ 
 }
 </style>
 </head>
@@ -187,6 +208,7 @@ canvas{
 
 <div id="topbar">
   <div id="clock">00:00:00</div>
+  <div id="bootTime"></div>
 </div>
 
 <div id="pages">
@@ -198,10 +220,14 @@ canvas{
       USD/JPY <span id="price">取得中…</span>
     </div>
 
-    <div id="fxInfo"></div>
-<div class="bigOrukan" id="orukanInfo"></div>
+<div id="fxInfo"></div>
 
-    <div class="updatedTime" id="fxUpdated"></div>
+<div class="bigOrukan" id="orukanInfo">
+  <div class="orukanPrice"></div>
+  <div class="orukanChange"></div>
+</div>
+
+<div class="updatedTime" id="fxUpdated"></div>
     </div>
 </div>
 <div id="page_stock" class="page">
@@ -263,6 +289,16 @@ canvas{
 /* ===== DOM取得 ===== */
 const bootdate=document.getElementById("bootdate");
 const clock=document.getElementById("clock");
+
+const bootTimeEl = document.getElementById("bootTime");
+
+const bootNow = new Date();
+bootTimeEl.innerText =
+  "BOOT " +
+  String(bootNow.getHours()).padStart(2,"0")+":"+
+  String(bootNow.getMinutes()).padStart(2,"0")+":"+
+  String(bootNow.getSeconds()).padStart(2,"0");
+
 
 const fxUpdated=document.getElementById("fxUpdated");
 const ac_price=document.getElementById("ac_price");
@@ -330,8 +366,16 @@ setInterval(()=>{
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  pageIndex=(pageIndex+1)%pages.length;
  document.getElementById(pages[pageIndex]).classList.add("active");
- if(pages[pageIndex]==="page_stock" && chartData.length){drawChart();}
-},80000);
+
+ if(pages[pageIndex]==="page_clock"){
+   loadFX();   // ← ★これを追加
+ }
+
+ if(pages[pageIndex]==="page_stock" && chartData.length){
+   drawChart();
+ }
+
+},25000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -388,13 +432,32 @@ const proxy =
     /* ===== 表示 ===== */
 
     const displayPrice =
-      Number(latest).toFixed(3);
+      Number(latest).toFixed(2);   // ← 中央表示（第2位）
+
+    const tickerPrice =
+      Number(latest).toFixed(3);   // ← ティッカー用（第3位）
 
     document.getElementById("price")
       .innerText = displayPrice;
 
-    tickerFX = `USD/JPY ${displayPrice}`;
-    updateTicker();
+const diff = latest - baseFX;
+const percent = (diff / baseFX) * 100;
+
+const up = diff > 0;
+const down = diff < 0;
+
+const color = up ? "#00ff66" :
+              down ? "#ff3333" :
+              "#ffffff";
+
+const arrow = up ? "▲" :
+              down ? "▼" : "－";
+
+    tickerFX =
+      `USD/JPY ${tickerPrice}
+       <span style="color:${color}">
+       ${arrow}${Math.abs(percent).toFixed(2)}%
+   </span> ◆ `;
 
 /* ===== ★ここに追加する ===== */
 
@@ -415,7 +478,7 @@ if(baseFX !== null){
 
   document.getElementById("fxInfo").innerHTML =
     `<span style="color:${color};font-size:28px;font-weight:bold;">
-      ${arrow}${Math.abs(percent).toFixed(3)}%
+      ${arrow}${Math.abs(percent).toFixed(2)}%
      </span>
      <span style="color:#888;font-size:16px;">
       
@@ -460,11 +523,13 @@ const percent = (change / baseFX) * 100;
   const arrow = up ? "▲" :
                 down ? "▼" : "－";
 
-  const priceEl = document.getElementById("price");
+    const priceEl = document.getElementById("price");
 
 if(priceEl){
 
-  const newPrice = simulatedFX.toFixed(3);
+  const newPrice = simulatedFX.toFixed(2);   // ← 中央は第2位のまま
+
+  const tickerPrice = simulatedFX.toFixed(3); // ← 追加
 
   if(previousDisplayPrice === null){
     priceEl.innerText = newPrice;
@@ -497,17 +562,16 @@ html += `<span class="${
 }
 
   tickerFX =
-    `USD/JPY ${simulatedFX.toFixed(3)}
+    `USD/JPY ${tickerPrice}
      <span style="color:${color}">
-     ${arrow}${Math.abs(change).toFixed(3)}
-     (${Math.abs(percent).toFixed(3)}%)
-     </span>`;
+     ${arrow}${Math.abs(percent).toFixed(2)}%
+     </span> ◆ `;
 
   updateTicker();
 }
 
 loadFX();
-setInterval(loadFX,15000);
+setInterval(loadFX,60000);
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
@@ -594,9 +658,11 @@ if(orukanEl && orukanEstimated !== null){
   const color = up ? "#00ff66" : "#ff3333";
   const arrow = up ? "▲" : "▼";
 
-orukanEl.innerHTML =
-  `ｵﾙｶﾝ推算 ${orukanEstimated.toFixed(0)}
-   <span style="color:${color}">
+orukanEl.querySelector(".orukanPrice").innerText =
+  "ｵﾙｶﾝ推算 " + orukanEstimated.toFixed(0);
+
+orukanEl.querySelector(".orukanChange").innerHTML =
+  `<span style="color:${color};font-size:28px;font-weight:bold;">
    ${arrow}${Math.abs(orukanDiffPercent).toFixed(2)}%
    </span>`;
 }
