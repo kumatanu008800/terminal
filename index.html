@@ -47,7 +47,7 @@ border-bottom:2px solid #ff9900;
   align-items:center;
   padding:0 20px;
 }
-#clock{color:#ff9900;font-size:28px;font-weight:bold;}
+#clock{color:#ff9900;font-size:34px;font-weight:bold;}
 
 #bootTime{
   margin-left:auto;
@@ -376,7 +376,7 @@ setInterval(()=>{
    drawChart();
  }
 
-},25000);
+},70000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -393,9 +393,7 @@ const fullText = tickerFX + tickerStock + tickerNews;
 let lastFX = null;
 let baseFX = null; // 起動時レート
 
-let simulatedFX = null;   // 疑似表示用
-let simulationTimer = null;
-let previousDisplayPrice = null;
+
 
 async function loadFX(){
   try{
@@ -405,7 +403,8 @@ async function loadFX(){
 
 const proxy =
   "https://corsproxy.io/?" +
-  encodeURIComponent(baseURL);
+  encodeURIComponent(baseURL) +
+  "&t=" + Date.now();
 
     const res = await fetch(proxy,{cache:"no-store"});
     if(!res.ok) throw "HTTP ERROR";
@@ -425,21 +424,49 @@ const proxy =
 
     if(!latest) throw "PRICE ERROR";
     
-    if(baseFX === null){
-  baseFX = latest;   // ← 起動時価格を保存
-  simulatedFX = latest;  // 疑似用にもセット
+// ★ 起動時レートを保存（初回のみ）
+if(baseFX === null){
+  baseFX = latest;
 }
 
     /* ===== 表示 ===== */
 
     const displayPrice =
-      Number(latest).toFixed(2);   // ← 中央表示（第2位）
+      Number(latest).toFixed(3);   // ← 中央表示（第2位）
 
     const tickerPrice =
       Number(latest).toFixed(3);   // ← ティッカー用（第3位）
 
-    document.getElementById("price")
-      .innerText = displayPrice;
+    const priceEl = document.getElementById("price");
+
+if(lastFX === null){
+  priceEl.innerText = displayPrice;
+}else{
+
+  let html = "";
+
+  const prevPrice = lastFX.toFixed(3);
+
+  for(let i=0;i<displayPrice.length;i++){
+
+    const newChar = displayPrice[i];
+    const oldChar = prevPrice[i];
+
+    if(newChar !== oldChar && newChar !== "."){
+
+      html += `<span class="${
+        latest > lastFX ? "digitUp" : "digitDown"
+      }">${newChar}</span>`;
+
+    }else{
+      html += newChar;
+    }
+  }
+
+  priceEl.innerHTML = html;
+}
+
+lastFX = latest;
 
 const diff = latest - baseFX;
 const percent = (diff / baseFX) * 100;
@@ -460,37 +487,22 @@ const arrow = up ? "▲" :
        ${arrow}${Math.abs(percent).toFixed(2)}%
    </span> ◆ `;
 
+document.getElementById("fxInfo").innerHTML =
+  `<span style="color:${color};font-size:28px;font-weight:bold;">
+    ${arrow}${Math.abs(percent).toFixed(2)}%
+   </span>`;
+
 /* ===== ★ここに追加する ===== */
 
-if(baseFX !== null){
 
-  const diff = latest - baseFX;
-  const percent = (diff / baseFX) * 100;
-
-  const up = diff > 0;
-  const down = diff < 0;
-
-  const color = up ? "#00ff00" :
-                down ? "#ff0000" :
-                "#e6e6e6";
-
-  const arrow = up ? "▲" :
-                down ? "▼" : "－";
-
-  document.getElementById("fxInfo").innerHTML =
-    `<span style="color:${color};font-size:28px;font-weight:bold;">
-      ${arrow}${Math.abs(percent).toFixed(2)}%
-     </span>
-     <span style="color:#888;font-size:16px;">
-      
-     </span>`;
-}
-
-/* ===== ★ここまで ===== */
 
 
     fxUpdated.innerText =
       "UPD " + getNowTime();
+      
+
+
+updateTicker(); 
 
   }catch(e){
     console.error(e);
@@ -501,78 +513,11 @@ if(baseFX !== null){
   }
 }
 
-function simulateFXMove(){
 
-  if(simulatedFX === null) return;
-
-  const prev = simulatedFX;
-
-  const move = (Math.random() - 0.5) * 0.006;
-  simulatedFX += move;
-
-// 起動時からの変化に変更
-const change = simulatedFX - baseFX;
-const percent = (change / baseFX) * 100;
-
-  const up = change > 0;
-  const down = change < 0;
-
-  const color = up ? "#00ff00" :
-                down ? "#ff0000" :
-                "#e6e6e6";
-
-  const arrow = up ? "▲" :
-                down ? "▼" : "－";
-
-    const priceEl = document.getElementById("price");
-
-if(priceEl){
-
-  const newPrice = simulatedFX.toFixed(2);   // ← 中央は第2位のまま
-
-  const tickerPrice = simulatedFX.toFixed(3); // ← 追加
-
-  if(previousDisplayPrice === null){
-    priceEl.innerText = newPrice;
-  }else{
-
-    let html = "";
-
-    for(let i=0;i<newPrice.length;i++){
-
-      const newChar = newPrice[i];
-      const oldChar = previousDisplayPrice[i];
-
-      if(newChar !== oldChar && newChar !== "."){
-
-html += `<span class="${
-  simulatedFX > prev
-    ? "digitUp"
-    : "digitDown"
-}">${newChar}</span>`;
-
-      }else{
-        html += newChar;
-      }
-    }
-
-    priceEl.innerHTML = html;
-  }
-
-  previousDisplayPrice = newPrice;
-}
-
-  tickerFX =
-    `USD/JPY ${tickerPrice}
-     <span style="color:${color}">
-     ${arrow}${Math.abs(percent).toFixed(2)}%
-     </span> ◆ `;
-
-  updateTicker();
-}
 
 loadFX();
-setInterval(loadFX,60000);
+setInterval(loadFX,10000);
+
 
 /* ===== 株 ===== */
 let chartData=[],lastLabels=[],volumeData=[];
@@ -633,8 +578,6 @@ async function loadStock(){
 
   const latest = prices.at(-1);
   const prev   = prices.at(-2);
-/* ===== 上級版① 3日平均変化率方式 ===== */
-
 
 
 /* ===== 推算 ===== */
@@ -668,9 +611,7 @@ orukanEl.querySelector(".orukanChange").innerHTML =
    </span>`;
 }
   
-  /* ===== 自己学習型 係数微調整 ===== */
-
-
+ 
 // 今日の推算値を保存
 
   const change = ((latest - prev) / prev) * 100;
@@ -799,7 +740,7 @@ volumeData.forEach((vol,i)=>{
 
 window.addEventListener("resize",()=>drawChart());
 loadStock();
-setInterval(loadStock,60000);
+setInterval(loadStock,600000);
 
 /* ===== 天気（GPS対応＋フォールバック） ===== */
 
@@ -1001,7 +942,7 @@ newsUpdatedEconomy.innerText =
 }
 
 loadNews();
-setInterval(loadNews,300000);
+setInterval(loadNews,352000);
 
 </script>
 </body>
