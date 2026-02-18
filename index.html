@@ -68,8 +68,9 @@ border-bottom:2px solid #ff9900;
 .page.active{opacity:1;visibility:visible;pointer-events:auto;}
 
 .panel{
-  flex:1;background:#050505;border:1px solid #222;
+  flex:1;background:#050505;border:0px solid #222;
   padding:15px;box-sizing:border-box;
+  min-height:0;
 }
 
 .bigFX{
@@ -101,7 +102,13 @@ border-bottom:2px solid #ff9900;
   font-weight:bold;
 }
 
-
+.fxPanel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:0;   /* ← これ追加 */
+}
 
 .priceFlashUp{
   color:#00ff00 !important;
@@ -162,6 +169,12 @@ canvas{
   height:300px;
 }
 
+#fxChart{
+  height:300px !important;
+  max-height:300px;
+  flex-shrink:0;
+}
+
 .newsItem{border-bottom:1px solid #222;padding:6px 0;font-size:14px;}
 .dailyItem{border-bottom:1px solid #222;padding:4px 0;font-size:14px;}
 
@@ -194,6 +207,19 @@ canvas{
   to{ transform:translateX(-50%); }
 }
 
+@media (orientation: portrait){
+  #fxChart{
+    height:220px !important;
+    max-height:220px;
+  }
+}
+@media (orientation: portrait){
+  #fxChart{
+    height:25vh !important;
+    max-height:240px;
+  }
+}
+
 @media (orientation: landscape){
   .page{flex-direction:column;overflow:auto;}
   canvas{height:250px;}
@@ -220,7 +246,9 @@ canvas{
 <div id="pages">
 
 <div id="page_clock" class="page active">
-  <div class="panel" style="display:flex;align-items:center;justify-content:center;flex-direction:column;">
+<div class="panel fxPanel">
+  
+  <canvas id="fxChart"></canvas>
 
 <div class="bigFX">
   <div>USD/JPY <span id="price">取得中…</span></div>
@@ -422,6 +450,14 @@ const proxy =
 
     const closes =
       result.indicators.quote[0].close;
+      
+      const quotes = result.indicators.quote[0];
+const opens  = quotes.open;
+const highs  = quotes.high;
+const lows   = quotes.low;
+const closesAll = quotes.close;
+
+drawFXCandle(opens, highs, lows, closesAll);
 
     const latest =
       closes.filter(v=>v!==null).at(-1);
@@ -742,7 +778,102 @@ volumeData.forEach((vol,i)=>{
  
 }
 
-window.addEventListener("resize",()=>drawChart());
+function drawFXCandle(opens, highs, lows, closes){
+
+  const canvas = document.getElementById("fxChart");
+  const ctx = canvas.getContext("2d");
+
+  const dpr = window.devicePixelRatio || 1;
+
+  const rect = canvas.getBoundingClientRect();  // ← 追加
+
+  canvas.width  = rect.width * dpr;             // ← 変更
+  canvas.height = rect.height * dpr;            // ← 変更
+
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr,dpr);
+
+ctx.setTransform(1,0,0,1,0,0);
+canvas.width  = rect.width * dpr;
+canvas.height = rect.height * dpr;
+
+ctx.scale(dpr,dpr);
+ctx.clearRect(0,0,rect.width,rect.height);
+
+  const data = opens.map((o,i)=>({
+    o:o,
+    h:highs[i],
+    l:lows[i],
+    c:closes[i]
+  })).filter(v =>
+  v.o !== null &&
+  v.h !== null &&
+  v.l !== null &&
+  v.c !== null
+).slice(-40); // 最新30本
+
+  if(data.length < 2) return;
+
+  const padding = 20;
+const w = rect.width - padding*2;
+const fullHeight = rect.height - padding*2;
+const h = fullHeight * 1;   // ← 1倍
+
+  const max = Math.max(...data.map(d=>d.h));
+  const min = Math.min(...data.map(d=>d.l));
+  const range = max - min || 1;
+
+  const candleWidth = w / data.length * 0.6;
+  const gap = w / data.length;
+
+  data.forEach((d,i)=>{
+
+    const x = padding + i*gap + gap/2;
+
+    const yHigh = padding + h - ((d.h - min)/range)*h;
+    const yLow  = padding + h - ((d.l - min)/range)*h;
+    const yOpen = padding + h - ((d.o - min)/range)*h;
+    const yClose= padding + h - ((d.c - min)/range)*h;
+
+    const up = d.c >= d.o;
+
+    ctx.strokeStyle = up ? "#00ff00" : "#ff0000";
+    ctx.fillStyle   = up ? "#00ff00" : "#ff0000";
+
+    // ヒゲ
+    ctx.beginPath();
+    ctx.moveTo(x, yHigh);
+    ctx.lineTo(x, yLow);
+    ctx.stroke();
+
+    // 実体
+    const bodyTop = Math.min(yOpen, yClose);
+    const bodyHeight = Math.abs(yClose - yOpen) || 1;
+
+    ctx.fillRect(
+      x - candleWidth/2,
+      bodyTop,
+      candleWidth,
+      bodyHeight
+    );
+
+  });
+}
+
+
+window.addEventListener("resize",()=>{
+
+  setTimeout(()=>{
+
+    drawChart();   // 株チャート再描画
+
+    // ★ FXローソク足も再描画
+    loadFX();      
+
+  },100);   // iPhone対策（高さ確定待ち）
+
+});
+loadFX();
 loadStock();
 setInterval(loadStock,600000);
 
