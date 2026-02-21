@@ -918,7 +918,7 @@ const padding = isLandscape ? 30 : 60;
  const w = rect.width - padding*2;
  const totalHeight = rect.height - padding*2;
 
- const priceHeight  = totalHeight * (isLandscape ? 0.4 : 0.7);
+ const priceHeight  = totalHeight * (isLandscape ? 0.42 : 0.7);
  const volumeHeight = totalHeight - priceHeight;
 
  const rawMax = Math.max(...chartData);
@@ -1042,9 +1042,9 @@ const fullHeight = rect.height - padding*2;
 const isLandscape =
   window.matchMedia("(orientation: landscape)").matches;
 
-const h = fullHeight * (isLandscape ? 1.7 : 1);
+const h = fullHeight * (isLandscape ? 1.75 : 1);
 
-const yOffset = isLandscape ? -(h - fullHeight) * 0.5 : 0;
+const yOffset = isLandscape ? -(h - fullHeight) * 0.505 : 0;
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
