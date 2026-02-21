@@ -212,8 +212,8 @@ canvas{
 }
 
 #fxChart{
-  height:100% !important;
-  max-height:none;
+  width:100%;
+  height:30vh;
   flex-shrink:0;
 }
 
@@ -252,13 +252,15 @@ canvas{
 
 
 @media (orientation: portrait){
-  #fxChart{
-    height:25vh !important;
-   
-  }
+#fxChart{
+  width:100%;
+  height:30vh;
+  flex-shrink:0;
+}
 }
 
 @media (orientation: landscape){
+
 
   .page{
     flex-direction:row;
@@ -273,16 +275,17 @@ canvas{
   }
 
   /* グラフ */
-  #fxChart{
-    width:55%;
-    height:25vh !important;
-  }
+#fxChart{
+  width:100%;
+  height:30vh;
+  flex-shrink:0;
+}
 
   /* 右側は幅固定をやめる */
 .bigFX,
 .bigOrukan{
     min-width:0;
-    font-size:clamp(20px,2.5vw,60px);  /* ← 小さく */
+    font-size:clamp(18px,2vw,50px);  /* ← 小さく */
     justify-content:center;
     align-items:flex-start;
     text-align:left;
