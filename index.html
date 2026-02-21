@@ -76,11 +76,19 @@ border-bottom:2px solid #ff9900;
 }
 
 .page{
-  position:absolute;inset:0;padding:20px;
-  box-sizing:border-box;display:flex;gap:20px;
-  opacity:0;visibility:hidden;pointer-events:none;
+  position:relative;   /* ← absolute をやめる */
+  padding:20px;
+  box-sizing:border-box;
+  display:flex;
+  gap:20px;
+  flex:1;              /* ← 追加 */
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
   transition:opacity .6s ease;
 }
+
+
 .page.active{opacity:1;visibility:visible;pointer-events:auto;}
 
 .panel{
