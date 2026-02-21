@@ -1015,10 +1015,14 @@ function drawFXCandle(opens, highs, lows, closes){
 
   if(data.length < 2) return;
 
-  const padding = 20;
+const padding = 20;
 const w = rect.width - padding*2;
 const fullHeight = rect.height - padding*2;
-const h = fullHeight * 1;   // ← 1倍
+
+const isLandscape =
+  window.matchMedia("(orientation: landscape)").matches;
+
+const h = fullHeight * (isLandscape ? 1.5 : 1);
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
