@@ -14,7 +14,7 @@ color:#e6e6e6;
 font-family:Arial,Helvetica,sans-serif;
   height:100%;
 }
-body{display:flex;height:100svh;overflow:hidden;}
+body{display:flex;height:100vh;overflow:hidden;}
 
 #leftmenu{
 width:clamp(70px,8vh,140px);
@@ -37,7 +37,13 @@ border-right:2px solid #ff9900;
   font-family:Arial,Helvetica,sans-serif;
 }
 
-#main{flex:1;display:flex;flex-direction:column;min-width:0;}
+#main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:0;   /* ← 追加 */
+}
 
 #topbar{
   height:8vh;
@@ -57,7 +63,12 @@ border-bottom:2px solid #ff9900;
   opacity:0.5;
 }
 
-#pages{position:relative;flex:1;overflow:hidden;}
+#pages{
+  position:relative;
+  flex:1;
+  overflow:hidden;
+  min-height:0;   /* ← 追加 */
+}
 
 .page{
   position:absolute;inset:0;padding:20px;
