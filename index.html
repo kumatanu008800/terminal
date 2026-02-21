@@ -918,7 +918,7 @@ const padding = isLandscape ? 30 : 60;
  const w = rect.width - padding*2;
  const totalHeight = rect.height - padding*2;
 
- const priceHeight  = totalHeight * (isLandscape ? 0.45 : 0.7);
+ const priceHeight  = totalHeight * (isLandscape ? 0.4 : 0.7);
  const volumeHeight = totalHeight - priceHeight;
 
  const rawMax = Math.max(...chartData);
@@ -985,7 +985,7 @@ const padding = isLandscape ? 30 : 60;
 
  volumeData.forEach((vol,i)=>{
 
-  const barWidth = gap * (isLandscape ? 0.25 : 0.5);
+  const barWidth = gap * (isLandscape ? 0.21 : 0.5);
   const x = padding + i*gap - barWidth/2;
 
   const barHeight =
