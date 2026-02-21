@@ -913,7 +913,13 @@ function drawChart(){
    window.matchMedia("(orientation: landscape)").matches;
 
  /* ===== 横画面最適化 ===== */
- const padding = isLandscape ? 30 : 60;
+ const paddingLeft  = isLandscape ? 80 : 60;   // ← 横だけ広く
+const paddingRight = isLandscape ? 30 : 60;
+const paddingTop   = isLandscape ? 30 : 60;
+const paddingBottom= isLandscape ? 30 : 60;
+
+const w = rect.width - paddingLeft - paddingRight;
+const totalHeight = rect.height - paddingTop - paddingBottom;
 
  const w = rect.width - padding*2;
  const totalHeight = rect.height - padding*2;
@@ -943,7 +949,7 @@ function drawChart(){
   ctx.lineTo(rect.width-padding,y);
   ctx.stroke();
 
-  ctx.fillText(val.toFixed(0),8,y+3);
+  ctx.fillText(val.toFixed(0),10,y+3);
  }
 
  const gap = w/(chartData.length-1);
