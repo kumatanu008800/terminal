@@ -985,7 +985,7 @@ const padding = isLandscape ? 30 : 60;
 
  volumeData.forEach((vol,i)=>{
 
-  const barWidth = gap*0.5;
+  const barWidth = gap * (isLandscape ? 0.25 : 0.5);
   const x = padding + i*gap - barWidth/2;
 
   const barHeight =
