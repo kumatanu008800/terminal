@@ -14,11 +14,11 @@ color:#e6e6e6;
 font-family:Arial,Helvetica,sans-serif;
   height:100%;
 }
-body{display:flex;height:100dvh;overflow:hidden;}
+body{display:flex;height:100svh;overflow:hidden;}
 
 #leftmenu{
-  width:60px;
-  min-width:60px;
+width:clamp(70px,8vh,140px);
+min-width:clamp(70px,8vh,140px);
 background:#0f0f0f;
 border-right:2px solid #ff9900;
   position:relative;
@@ -40,7 +40,7 @@ border-right:2px solid #ff9900;
 #main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
 #topbar{
-  height:60px;
+  height:8vh;
 background:#141414;
 border-bottom:2px solid #ff9900;
   display:flex;
@@ -71,10 +71,11 @@ border-bottom:2px solid #ff9900;
   flex:1;background:#050505;border:0px solid #222;
   padding:15px;box-sizing:border-box;
   min-height:0;
+  overflow:hidden;
 }
 
 .bigFX{
-  font-size:10vw;
+  font-size:clamp(48px,8vw,140px);
   color:#ff9900;
   font-weight:bold;
   text-align:center;
@@ -85,7 +86,7 @@ border-bottom:2px solid #ff9900;
   gap:10px;   /* ← これが超重要 */
 }
 .bigOrukan{
-  font-size:10vw;
+  font-size:clamp(48px,8vw,140px);
   font-weight:bold;
   text-align:center;
   width:100%;
@@ -108,6 +109,7 @@ border-bottom:2px solid #ff9900;
   align-items:center;
   justify-content:flex-start;
   min-height:0;   /* ← これ追加 */
+  overflow:hidden;
 }
 
 .priceFlashUp{
@@ -166,12 +168,12 @@ canvas{
   background:#111;
   border:1px solid #ff9900;
   width:100%;
-  height:300px;
+  height:30vh;
 }
 
 #fxChart{
-  height:300px !important;
-  max-height:300px;
+  height:30vh !important;
+  max-height:none;
   flex-shrink:0;
 }
 
@@ -180,7 +182,7 @@ canvas{
 
 
 #ticker{
-  height:50px;
+  height:6vh;
   background:#111;
   border-top:2px solid #ff9900;
   overflow:hidden;
@@ -207,24 +209,45 @@ canvas{
   to{ transform:translateX(-50%); }
 }
 
-@media (orientation: portrait){
-  #fxChart{
-    height:220px !important;
-    max-height:220px;
-  }
-}
+
 @media (orientation: portrait){
   #fxChart{
     height:25vh !important;
-    max-height:240px;
+   
   }
 }
 
 @media (orientation: landscape){
-  .page{flex-direction:column;overflow:auto;}
-  canvas{height:250px;}
-  .bigFX{font-size:6vw;}
-  .bigOrukan{font-size:6vw;}
+
+  /* ページを横並びにする */
+  .page{
+    flex-direction:row;
+    overflow:hidden;
+  }
+
+  /* FXパネルを左右2分割 */
+  .fxPanel{
+    flex-direction:row;
+    align-items:stretch;
+    justify-content:space-between;
+    gap:20px;
+  }
+
+  /* グラフを左側に */
+  #fxChart{
+    width:55%;
+    height:100% !important;
+  }
+
+  /* 価格情報を右側に縦並び */
+  .bigFX,
+  .bigOrukan{
+    width:45%;
+    font-size:clamp(32px,4vw,100px);
+    justify-content:center;
+  }
+
+}
 
  
 }
@@ -361,12 +384,22 @@ function adjustTickerSpeed(){
   });
 }
 /* ===== 左メニュー日付 ===== */
-const now=new Date();
+/* ===== 左メニュー日付（自動更新） ===== */
 const week=["日","月","火","水","木","金","土"];
-bootdate.innerText=
- (now.getMonth()+1)+"月"+
- now.getDate()+"日"+
- "（"+week[now.getDay()]+"）";
+
+function updateBootDate(){
+  const now = new Date();
+  bootdate.innerText =
+    (now.getMonth()+1)+"月"+
+    now.getDate()+"日"+
+    "（"+week[now.getDay()]+"）";
+}
+
+// 60分ごとに更新（十分軽い）
+setInterval(updateBootDate,600000);
+
+// 起動時にも実行
+updateBootDate();
 
 /* ===== 時計 ===== */
 function updateClock(){
@@ -408,7 +441,7 @@ setInterval(()=>{
    drawChart();
  }
 
-},70000);
+},7000);
 
 /* ===== ティッカー ===== */
 let tickerFX="",tickerStock="",tickerNews="";
@@ -423,6 +456,8 @@ const fullText = tickerFX + tickerStock + tickerNews;
 /* ===== USDJPY 直前更新比 ===== */
 
 let lastFX = null;
+let lastTickerFX = null;
+let lastTickerOrukan = null;
 let baseFX = null; // 起動時レート
 
 
@@ -521,10 +556,40 @@ const color = up ? "#00ff00" :
 const arrow = up ? "▲" :
               down ? "▼" : "－";
 
-    tickerFX =
-      `USD/JPY ${tickerPrice}
-       <span style="color:${color}">
-       ${arrow}${Math.abs(percent).toFixed(2)}%
+let tickerPriceHTML = tickerPrice;
+
+if(lastTickerFX !== null){
+
+  const prev = lastTickerFX.toFixed(3);
+  let html = "";
+
+  for(let i=0;i<tickerPrice.length;i++){
+
+    const newChar = tickerPrice[i];
+    const oldChar = prev[i];
+
+    if(newChar !== oldChar && newChar !== "."){
+
+      html += `<span class="${
+        latest > lastTickerFX
+          ? "digitUp"
+          : "digitDown"
+      }">${newChar}</span>`;
+
+    }else{
+      html += newChar;
+    }
+  }
+
+  tickerPriceHTML = html;
+}
+
+lastTickerFX = latest;
+
+tickerFX =
+  `USD/JPY ${tickerPriceHTML}
+   <span style="color:${color}">
+   ${arrow}${Math.abs(percent).toFixed(2)}%
    </span> ◆ `;
 
 document.getElementById("fxInfo").innerHTML =
@@ -564,6 +629,9 @@ let chartData=[],lastLabels=[],volumeData=[];
 /* ===== オルカン推算用 ===== */
 /* ===== オルカン係数方式 ===== */
 const ORUKAN_COEF = 1.275; // ← 固定係数（これだけ）
+
+let lastOrukan = null;   // ← ★これを追加
+
 let orukanEstimated = null;
 let orukanDiff = null;
 let orukanDiffPercent = null;
@@ -642,9 +710,45 @@ if(orukanEl && orukanEstimated !== null){
   const color = up ? "#00ff00" : "#ff0000";
   const arrow = up ? "▲" : "▼";
 
-orukanEl.querySelector(".orukanPrice").innerText =
-  "推算ｵﾙｶﾝ " + orukanEstimated.toFixed(0);
+const priceEl =
+  orukanEl.querySelector(".orukanPrice");
 
+const displayPrice =
+  orukanEstimated.toFixed(0);
+
+if(lastOrukan === null){
+
+  priceEl.innerText =
+    "推算ｵﾙｶﾝ " + displayPrice;
+
+}else{
+
+  let html = "推算ｵﾙｶﾝ ";
+  const prevPrice =
+    lastOrukan.toFixed(0);
+
+  for(let i=0;i<displayPrice.length;i++){
+
+    const newChar = displayPrice[i];
+    const oldChar = prevPrice[i];
+
+    if(newChar !== oldChar){
+
+      html += `<span class="${
+        orukanEstimated > lastOrukan
+          ? "digitUp"
+          : "digitDown"
+      }">${newChar}</span>`;
+
+    }else{
+      html += newChar;
+    }
+  }
+
+  priceEl.innerHTML = html;
+}
+
+lastOrukan = orukanEstimated;
 orukanEl.querySelector(".orukanChange").innerHTML =
   `<span class="fxChange" style="color:${color};">
    ${arrow}${Math.abs(orukanDiffPercent).toFixed(2)}%
@@ -671,10 +775,48 @@ orukanEl.querySelector(".orukanChange").innerHTML =
 
 if(orukanEstimated !== null){
 
-  tickerStock +=
-    ` ◆ 推算ｵﾙｶﾝ ${orukanEstimated.toFixed(0)}
-     <span style="color:${orukanDiff>=0?"#00ff00":"#ff0000"}">
-     ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
+let tickerOrukanPrice =
+  orukanEstimated.toFixed(0);
+
+let tickerOrukanHTML =
+  tickerOrukanPrice;
+
+if(lastTickerOrukan !== null){
+
+  const prev =
+    lastTickerOrukan.toFixed(0);
+
+  let html = "";
+
+  for(let i=0;i<tickerOrukanPrice.length;i++){
+
+    const newChar =
+      tickerOrukanPrice[i];
+    const oldChar =
+      prev[i];
+
+    if(newChar !== oldChar){
+
+      html += `<span class="${
+        orukanEstimated > lastTickerOrukan
+          ? "digitUp"
+          : "digitDown"
+      }">${newChar}</span>`;
+
+    }else{
+      html += newChar;
+    }
+  }
+
+  tickerOrukanHTML = html;
+}
+
+lastTickerOrukan = orukanEstimated;
+
+tickerStock +=
+  ` ◆ 推算ｵﾙｶﾝ ${tickerOrukanHTML}
+   <span style="color:${orukanDiff>=0?"#00ff00":"#ff0000"}">
+   ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
 }
 
   updateTicker();
@@ -793,11 +935,7 @@ function drawFXCandle(opens, highs, lows, closes){
   ctx.setTransform(1,0,0,1,0,0);
   ctx.scale(dpr,dpr);
 
-ctx.setTransform(1,0,0,1,0,0);
-canvas.width  = rect.width * dpr;
-canvas.height = rect.height * dpr;
 
-ctx.scale(dpr,dpr);
 ctx.clearRect(0,0,rect.width,rect.height);
 
   const data = opens.map((o,i)=>({
