@@ -74,6 +74,16 @@ border-bottom:2px solid #ff9900;
   overflow:hidden;
 }
 
+.rightInfo{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:20px;
+  flex:1;
+  min-width:0;
+}
+
+
 .bigFX{
   font-size:clamp(48px,8vw,140px);
   color:#ff9900;
@@ -219,35 +229,35 @@ canvas{
 
 @media (orientation: landscape){
 
-  /* ページを横並びにする */
   .page{
     flex-direction:row;
     overflow:hidden;
   }
 
-  /* FXパネルを左右2分割 */
   .fxPanel{
     flex-direction:row;
-    align-items:stretch;
-    justify-content:space-between;
-    gap:20px;
+    align-items:center;
+    justify-content:flex-start;
+    gap:40px;
   }
 
-  /* グラフを左側に */
+  /* グラフ */
   #fxChart{
     width:55%;
-    height:100% !important;
+    height:25vh !important;
   }
 
-  /* 価格情報を右側に縦並び */
-  .bigFX,
-  .bigOrukan{
-    width:45%;
-    font-size:clamp(32px,4vw,100px);
+  /* 右側は幅固定をやめる */
+.bigFX,
+.bigOrukan{
+    min-width:0;
+    font-size:clamp(20px,2.5vw,60px);  /* ← 小さく */
     justify-content:center;
-  }
-
+    align-items:flex-start;
+    text-align:left;
+    word-break:keep-all;              /* ← 追加 */
 }
+
 
  
 }
@@ -273,17 +283,21 @@ canvas{
   
   <canvas id="fxChart"></canvas>
 
-<div class="bigFX">
-  <div>USD/JPY <span id="price">取得中…</span></div>
-  <div id="fxInfo"></div>
-</div>
+<div class="rightInfo">
 
-<div class="bigOrukan" id="orukanInfo">
-  <div class="orukanPrice"></div>
-  <div class="orukanChange"></div>
-</div>
+  <div class="bigFX">
+    <div>USD/JPY <span id="price">取得中…</span></div>
+    <div id="fxInfo"></div>
+  </div>
 
-<div class="updatedTime" id="fxUpdated"></div>
+  <div class="bigOrukan" id="orukanInfo">
+    <div class="orukanPrice"></div>
+    <div class="orukanChange"></div>
+  </div>
+
+  <div class="updatedTime" id="fxUpdated"></div>
+
+</div>
     </div>
 </div>
 <div id="page_stock" class="page">
