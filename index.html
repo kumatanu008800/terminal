@@ -873,90 +873,116 @@ tickerStock +=
 }
 
 function drawChart(){
- if(chartData.length<2) return;
- const c=document.getElementById("chart");
- const ctx=c.getContext("2d");
 
- const dpr=window.devicePixelRatio||1;
+ if(chartData.length < 2) return;
+
+ const c = document.getElementById("chart");
+ const ctx = c.getContext("2d");
+
+ const dpr = window.devicePixelRatio || 1;
+ const rect = c.getBoundingClientRect();
+
+ c.width  = rect.width * dpr;
+ c.height = rect.height * dpr;
+
  ctx.setTransform(1,0,0,1,0,0);
- c.width=c.clientWidth*dpr;
- c.height=c.clientHeight*dpr;
  ctx.scale(dpr,dpr);
+ ctx.clearRect(0,0,rect.width,rect.height);
 
- ctx.clearRect(0,0,c.width,c.height);
+ const isLandscape =
+   window.matchMedia("(orientation: landscape)").matches;
 
-const padding=60;
-const w=c.clientWidth-padding*2;
+ /* ===== 横画面最適化 ===== */
+ const padding = isLandscape ? 30 : 60;
 
-const totalHeight=c.clientHeight-padding*2;
-const priceHeight=totalHeight*0.7;
-const volumeHeight=totalHeight*0.3;
+ const w = rect.width - padding*2;
+ const totalHeight = rect.height - padding*2;
 
- const rawMax=Math.max(...chartData);
- const rawMin=Math.min(...chartData);
+ const priceHeight  = totalHeight * (isLandscape ? 0.82 : 0.7);
+ const volumeHeight = totalHeight - priceHeight;
 
- const paddingRange=(rawMax-rawMin)*0.1;
- const max=rawMax+paddingRange;
- const min=rawMin-paddingRange;
- const range=max-min||1;
+ const rawMax = Math.max(...chartData);
+ const rawMin = Math.min(...chartData);
 
- ctx.fillStyle="#ff9900";
- ctx.font="12px Arial";
+ const paddingRange = (rawMax - rawMin) * 0.1;
+ const max = rawMax + paddingRange;
+ const min = rawMin - paddingRange;
+ const range = max - min || 1;
 
+ ctx.fillStyle = "#ff9900";
+ ctx.font = isLandscape ? "10px Arial" : "12px Arial";
+
+ /* ===== 横線 ===== */
  for(let i=0;i<=4;i++){
-  const val=min+range*(i/4);
- const y=padding+priceHeight-(priceHeight*(i/4));
-  ctx.strokeStyle="#222";
-  ctx.beginPath();ctx.moveTo(padding,y);ctx.lineTo(c.clientWidth-padding,y);ctx.stroke();
-  ctx.fillText(val.toFixed(0),10,y+4);
+  const val = min + range*(i/4);
+  const y = padding + priceHeight - (priceHeight*(i/4));
+
+  ctx.strokeStyle = "#222";
+  ctx.beginPath();
+  ctx.moveTo(padding,y);
+  ctx.lineTo(rect.width-padding,y);
+  ctx.stroke();
+
+  ctx.fillText(val.toFixed(0),8,y+3);
  }
 
- const gap=w/(chartData.length-1);
+ const gap = w/(chartData.length-1);
+
+ /* ===== 縦線 + 日付 ===== */
  lastLabels.forEach((lab,i)=>{
-  const x=padding+i*gap;
-  ctx.strokeStyle="#222";
-  ctx.beginPath();ctx.moveTo(x,padding);ctx.lineTo(x,c.clientHeight-padding);ctx.stroke();
-  ctx.fillText(lab,x-15,c.clientHeight-20);
+  const x = padding + i*gap;
+
+  ctx.strokeStyle="#181818";
+  ctx.beginPath();
+  ctx.moveTo(x,padding);
+  ctx.lineTo(x,padding+priceHeight);
+  ctx.stroke();
+
+  if(!isLandscape || i%2===0){
+    ctx.fillText(lab,x-15,rect.height-10);
+  }
  });
 
+ /* ===== 折れ線 ===== */
  ctx.strokeStyle="#ff9900";
+ ctx.lineWidth = 2;
  ctx.beginPath();
-chartData.forEach((v,i)=>{
-  const x = padding + i*gap;   // ← 追加
+
+ chartData.forEach((v,i)=>{
+  const x = padding + i*gap;
   const y =
-    padding + priceHeight
-    - ((v-min)/range)*priceHeight;
+    padding + priceHeight -
+    ((v-min)/range)*priceHeight;
 
   if(i===0) ctx.moveTo(x,y);
   else ctx.lineTo(x,y);
-});
+ });
+
  ctx.stroke();
- /* ===== 出来高バー描画 ===== */
 
-const maxVolume=Math.max(...volumeData);
+ /* ===== 出来高 ===== */
+ const maxVolume = Math.max(...volumeData);
 
-volumeData.forEach((vol,i)=>{
+ volumeData.forEach((vol,i)=>{
 
-  const barWidth=gap*0.6;
-  const x=padding+i*gap-barWidth/2;
+  const barWidth = gap*0.5;
+  const x = padding + i*gap - barWidth/2;
 
-  const barHeight=
+  const barHeight =
     (vol/maxVolume)*volumeHeight;
 
-  const y=
-    padding+priceHeight
-    + (volumeHeight-barHeight);
+  const y =
+    padding + priceHeight +
+    (volumeHeight-barHeight);
 
-  // 上昇・下落色分け
-  if(i>0 && chartData[i]>=chartData[i-1]){
-    ctx.fillStyle="#00ff00";
-  }else{
-    ctx.fillStyle="#ff0000";
-  }
+  ctx.fillStyle =
+    i>0 && chartData[i]>=chartData[i-1]
+    ? "#00ff00"
+    : "#ff0000";
 
   ctx.fillRect(x,y,barWidth,barHeight);
-});
- 
+ });
+
 }
 
 function drawFXCandle(opens, highs, lows, closes){
