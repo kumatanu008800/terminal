@@ -184,8 +184,10 @@ border-bottom:2px solid #ff9900;
 .updatedTime{
   font-size:14px;
   color:#ff9900;
-  margin-top:10px;
+  margin-top:auto;   /* ← これが決定打 */
+  padding-top:10px;
 }
+
 .newsHeader{
   display:flex;
   justify-content:space-between;
@@ -286,10 +288,11 @@ canvas{
 .rightInfo{
   display:flex;
   flex-direction:column;
-  justify-content:flex-start;  /* ← centerをやめる */
+  justify-content:flex-start;   /* ← centerをやめる */
   gap:20px;
   flex:1;
   min-width:0;
+  min-height:0;
 }
 
 
