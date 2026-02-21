@@ -283,16 +283,15 @@ canvas{
     word-break:keep-all;              /* ← 追加 */
 }
 
- .rightInfo{
-    position:relative;
-  }
-
-  .updatedTime{
-    position:absolute;
-    bottom:10px;
-    right:10px;
-    margin-top:0;
+.rightInfo{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;  /* ← centerをやめる */
+  gap:20px;
+  flex:1;
+  min-width:0;
 }
+
 
 
  
