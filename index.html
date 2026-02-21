@@ -1022,7 +1022,9 @@ const fullHeight = rect.height - padding*2;
 const isLandscape =
   window.matchMedia("(orientation: landscape)").matches;
 
-const h = fullHeight * (isLandscape ? 1.4 : 1);
+const h = fullHeight * (isLandscape ? 1.5 : 1);
+
+const yOffset = isLandscape ? -(h - fullHeight) * 0.5 : 0;
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
@@ -1035,10 +1037,10 @@ const h = fullHeight * (isLandscape ? 1.4 : 1);
 
     const x = padding + i*gap + gap/2;
 
-    const yHigh = padding + h - ((d.h - min)/range)*h;
-    const yLow  = padding + h - ((d.l - min)/range)*h;
-    const yOpen = padding + h - ((d.o - min)/range)*h;
-    const yClose= padding + h - ((d.c - min)/range)*h;
+const yHigh = padding + h - ((d.h - min)/range)*h + yOffset;
+const yLow  = padding + h - ((d.l - min)/range)*h + yOffset;
+const yOpen = padding + h - ((d.o - min)/range)*h + yOffset;
+const yClose= padding + h - ((d.c - min)/range)*h + yOffset;
 
     const up = d.c >= d.o;
 
