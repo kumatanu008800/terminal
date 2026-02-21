@@ -985,7 +985,7 @@ const padding = isLandscape ? 30 : 60;
 
  volumeData.forEach((vol,i)=>{
 
-  const barWidth = gap * (isLandscape ? 0.21 : 0.5);
+  const barWidth = gap * (isLandscape ? 0.18 : 0.5);
   const x = padding + i*gap - barWidth/2;
 
   const barHeight =
@@ -1042,7 +1042,7 @@ const fullHeight = rect.height - padding*2;
 const isLandscape =
   window.matchMedia("(orientation: landscape)").matches;
 
-const h = fullHeight * (isLandscape ? 1.75 : 1);
+const h = fullHeight * (isLandscape ? 1.7 : 1);
 
 const yOffset = isLandscape ? -(h - fullHeight) * 0.5 : 0;
 
