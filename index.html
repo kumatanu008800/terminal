@@ -92,10 +92,13 @@ border-bottom:2px solid #ff9900;
 .page.active{opacity:1;visibility:visible;pointer-events:auto;}
 
 .panel{
-  flex:1;background:#050505;border:0px solid #222;
-  padding:15px;box-sizing:border-box;
+  flex:1;
+  background:#050505;
+  border:0px solid #222;
+  padding:15px;
+  box-sizing:border-box;
   min-height:0;
-  overflow:hidden;
+  overflow:visible;   /* ← ここだけ変更 */
 }
 
 .rightInfo{
