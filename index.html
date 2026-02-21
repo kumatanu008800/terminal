@@ -244,18 +244,18 @@ canvas{
   /* 本体価格 */
   .bigFX,
   .bigOrukan{
-    font-size:4.5vmin;
+    font-size:5vmin;
   }
 
   /* %表示 */
   .fxChange,
   .orukanChange span{
-    font-size:3.8vmin;
+    font-size:4.5vmin;
   }
 
   /* ローソク足 */
   #fxChart{
-    height:18vh !important;
+    height:25vh !important;
     max-height:none !important;
   }
   
@@ -277,8 +277,17 @@ canvas{
   .updatedTime{
     margin-top:0.5px;   /* 10px → 半分 */
     font-size:3.5vmin;
-  
   }
+  
+    #page_stock #chart{
+    height:30vh !important;   /* ← 安定する */
+    max-height:none !important;
+  }
+
+  /* 2ページ目 タイトルと価額の間を圧縮 */
+  #page_stock .panel > div:first-child{
+    margin-bottom:0.01px !important;  
+}
 
 }
 </style>
@@ -426,7 +435,7 @@ function updateBootDate(){
 }
 
 // 60分ごとに更新（十分軽い）
-setInterval(updateBootDate,600000);
+setInterval(updateBootDate,60000);
 
 // 起動時にも実行
 updateBootDate();
