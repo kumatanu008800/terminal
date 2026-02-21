@@ -212,18 +212,28 @@ canvas{
     height:25vh !important;
     max-height:240px;
   }
+  
+  
+.fxChange span{
+  letter-spacing:1px;
+}
+  
 }
 
 @media (orientation: landscape){
-  .page{flex-direction:column;overflow:auto;}
- 
-  .bigFX{font-size:5vw;}
-  .bigOrukan{font-size:5vw;}
 
- 
+  .page{
+    flex-direction:column;
+    overflow:auto;
+  }
+
   #pages{
     height:calc(100dvh - 110px);
   }
+
+.fxChange span{
+  letter-spacing:1px;
+}
 
   .panel{
     flex:1;
@@ -231,27 +241,45 @@ canvas{
     overflow:hidden;
   }
 
-  canvas{
-    height:22vh !important;
-    max-height:none;
-  }
-
+  /* 本体価格 */
   .bigFX,
   .bigOrukan{
-    font-size:5vw;
+    font-size:4.5vmin;
   }
 
+  /* %表示 */
   .fxChange,
   .orukanChange span{
-    font-size:3vw;
- }
- 
-   #fxChart{
-    height:22vh !important;
+    font-size:3.8vmin;
+  }
+
+  /* ローソク足 */
+  #fxChart{
+    height:18vh !important;
     max-height:none !important;
- }
- 
- 
+  }
+  
+   .bigFX{
+    gap:0.1px;  /* 10px → 2px に圧縮 */
+  }
+
+  /* 推算オルカンと % の間 */
+  .bigOrukan{
+    gap:0.1px; 
+   }
+  
+  .fxChange,
+  .orukanChange span{
+    line-height:1.0;
+  }
+  
+   /* 推算オルカン % と UPD の間 */
+  .updatedTime{
+    margin-top:0.5px;   /* 10px → 半分 */
+    font-size:3.5vmin;
+  
+  }
+
 }
 </style>
 </head>
