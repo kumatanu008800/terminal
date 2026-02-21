@@ -14,15 +14,11 @@ color:#e6e6e6;
 font-family:Arial,Helvetica,sans-serif;
   height:100%;
 }
-body{
-  display:flex;
-  min-height:100vh;   /* ← heightをやめる */
-  overflow:visible;  
-}
+body{display:flex;height:100dvh;overflow:hidden;}
 
 #leftmenu{
-width:clamp(70px,8vh,140px);
-min-width:clamp(70px,8vh,140px);
+  width:60px;
+  min-width:60px;
 background:#0f0f0f;
 border-right:2px solid #ff9900;
   position:relative;
@@ -41,17 +37,10 @@ border-right:2px solid #ff9900;
   font-family:Arial,Helvetica,sans-serif;
 }
 
-#main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-  min-height:0; /* ← ここが決定打 */
-}
+#main{flex:1;display:flex;flex-direction:column;min-width:0;}
 
 #topbar{
-   height:70px;      /* 固定px */
-  flex-shrink:0;
+  height:60px;
 background:#141414;
 border-bottom:2px solid #ff9900;
   display:flex;
@@ -68,52 +57,24 @@ border-bottom:2px solid #ff9900;
   opacity:0.5;
 }
 
-#pages{
-  position:relative;
-  flex:1;
-  overflow:visible;  
-  min-height:0;   /* ← 追加 */
-}
+#pages{position:relative;flex:1;overflow:hidden;}
 
 .page{
-  position:relative;   /* ← absolute をやめる */  min-height:100%; 
-  padding:20px;
-  box-sizing:border-box;
-  display:flex;
-  gap:20px;
-  flex:1;              /* ← 追加 */
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
+  position:absolute;inset:0;padding:20px;
+  box-sizing:border-box;display:flex;gap:20px;
+  opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .6s ease;
 }
-
-
 .page.active{opacity:1;visibility:visible;pointer-events:auto;}
 
 .panel{
-  flex:1;
-  background:#050505;
-  border:0px solid #222;
-  padding:15px;
-  box-sizing:border-box;
-  min-height:0;
-  overflow:visible;   /* ← ここだけ変更 */
-}
-
-.rightInfo{
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;  /* ← center禁止 */
-  gap:20px;
-  flex:1;
-  min-width:0;
+  flex:1;background:#050505;border:0px solid #222;
+  padding:15px;box-sizing:border-box;
   min-height:0;
 }
-
 
 .bigFX{
-  font-size:clamp(48px,8vw,140px);
+  font-size:10vw;
   color:#ff9900;
   font-weight:bold;
   text-align:center;
@@ -124,7 +85,7 @@ border-bottom:2px solid #ff9900;
   gap:10px;   /* ← これが超重要 */
 }
 .bigOrukan{
-  font-size:clamp(48px,8vw,140px);
+  font-size:10vw;
   font-weight:bold;
   text-align:center;
   width:100%;
@@ -146,8 +107,7 @@ border-bottom:2px solid #ff9900;
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
-  min-height:0;
-  overflow:visible;   /* ← ここだけ変更 */
+  min-height:0;   /* ← これ追加 */
 }
 
 .priceFlashUp{
@@ -188,10 +148,8 @@ border-bottom:2px solid #ff9900;
 .updatedTime{
   font-size:14px;
   color:#ff9900;
-  margin-top:auto;   /* ← これが決定打 */
-  padding-top:10px;
+  margin-top:10px;
 }
-
 .newsHeader{
   display:flex;
   justify-content:space-between;
@@ -208,12 +166,12 @@ canvas{
   background:#111;
   border:1px solid #ff9900;
   width:100%;
-  height:100%;
+  height:300px;
 }
 
 #fxChart{
-  width:100%;
-  height:30vh;
+  height:300px !important;
+  max-height:300px;
   flex-shrink:0;
 }
 
@@ -222,11 +180,10 @@ canvas{
 
 
 #ticker{
-  height:60px;      /* 固定pxにする */
-  flex-shrink:0;
+  height:50px;
   background:#111;
   border-top:2px solid #ff9900;
-  overflow:visible;  
+  overflow:hidden;
   position:relative;
 }
 
@@ -250,61 +207,50 @@ canvas{
   to{ transform:translateX(-50%); }
 }
 
-
 @media (orientation: portrait){
-#fxChart{
-  width:100%;
-  height:30vh;
-  flex-shrink:0;
-}
+  #fxChart{
+    height:25vh !important;
+    max-height:240px;
+  }
 }
 
 @media (orientation: landscape){
+  .page{flex-direction:column;overflow:auto;}
+ 
+  .bigFX{font-size:5vw;}
+  .bigOrukan{font-size:5vw;}
 
-
-  .page{
-    flex-direction:row;
-    overflow:visible;  
-      min-height:100%; 
+ 
+  #pages{
+    height:calc(100dvh - 110px);
   }
 
-  .fxPanel{
-    flex-direction:row;
-    align-items:center;
-    justify-content:flex-start;
-    gap:40px;
+  .panel{
+    flex:1;
+    min-height:0;
+    overflow:hidden;
   }
 
-  /* グラフ */
-#fxChart{
-  width:100%;
-  height:30vh;
-  flex-shrink:0;
-}
+  canvas{
+    height:22vh !important;
+    max-height:none;
+  }
 
-  /* 右側は幅固定をやめる */
-.bigFX,
-.bigOrukan{
-    min-width:0;
-    font-size:clamp(18px,2vw,50px);  /* ← 小さく */
-    justify-content:center;
-    align-items:flex-start;
-    text-align:left;
-    word-break:keep-all;              /* ← 追加 */
-}
+  .bigFX,
+  .bigOrukan{
+    font-size:5vw;
+  }
 
-.rightInfo{
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-start;  /* ← center禁止 */
-  gap:20px;
-  flex:1;
-  min-width:0;
-  min-height:0;
-}
-
-
-
+  .fxChange,
+  .orukanChange span{
+    font-size:3vw;
+ }
+ 
+   #fxChart{
+    height:22vh !important;
+    max-height:none !important;
+ }
+ 
  
 }
 </style>
@@ -329,21 +275,17 @@ canvas{
   
   <canvas id="fxChart"></canvas>
 
-<div class="rightInfo">
-
-  <div class="bigFX">
-    <div>USD/JPY <span id="price">取得中…</span></div>
-    <div id="fxInfo"></div>
-  </div>
-
-  <div class="bigOrukan" id="orukanInfo">
-    <div class="orukanPrice"></div>
-    <div class="orukanChange"></div>
-  </div>
-
-  <div class="updatedTime" id="fxUpdated"></div>
-
+<div class="bigFX">
+  <div>USD/JPY <span id="price">取得中…</span></div>
+  <div id="fxInfo"></div>
 </div>
+
+<div class="bigOrukan" id="orukanInfo">
+  <div class="orukanPrice"></div>
+  <div class="orukanChange"></div>
+</div>
+
+<div class="updatedTime" id="fxUpdated"></div>
     </div>
 </div>
 <div id="page_stock" class="page">
@@ -982,23 +924,19 @@ volumeData.forEach((vol,i)=>{
 
 function drawFXCandle(opens, highs, lows, closes){
 
-  if(!opens || !opens.length) return;
-
   const canvas = document.getElementById("fxChart");
-  if(!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  if(rect.width === 0 || rect.height === 0) return;
-
   const ctx = canvas.getContext("2d");
+
   const dpr = window.devicePixelRatio || 1;
 
-  canvas.width  = rect.width * dpr;
-  canvas.height = rect.height * dpr;
+  const rect = canvas.getBoundingClientRect();  // ← 追加
+
+  canvas.width  = rect.width * dpr;             // ← 変更
+  canvas.height = rect.height * dpr;            // ← 変更
 
   ctx.setTransform(1,0,0,1,0,0);
   ctx.scale(dpr,dpr);
-  ctx.clearRect(0,0,rect.width,rect.height);
+
 
   const data = opens.map((o,i)=>({
     o:o,
@@ -1006,17 +944,18 @@ function drawFXCandle(opens, highs, lows, closes){
     l:lows[i],
     c:closes[i]
   })).filter(v =>
-    v.o !== null &&
-    v.h !== null &&
-    v.l !== null &&
-    v.c !== null
-  ).slice(-40);
+  v.o !== null &&
+  v.h !== null &&
+  v.l !== null &&
+  v.c !== null
+).slice(-40); // 最新30本
 
   if(data.length < 2) return;
 
   const padding = 20;
-  const w = rect.width - padding*2;
-  const h = rect.height - padding*2;
+const w = rect.width - padding*2;
+const fullHeight = rect.height - padding*2;
+const h = fullHeight * 1;   // ← 1倍
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
@@ -1029,21 +968,23 @@ function drawFXCandle(opens, highs, lows, closes){
 
     const x = padding + i*gap + gap/2;
 
-    const yHigh  = padding + h - ((d.h - min)/range)*h;
-    const yLow   = padding + h - ((d.l - min)/range)*h;
-    const yOpen  = padding + h - ((d.o - min)/range)*h;
-    const yClose = padding + h - ((d.c - min)/range)*h;
+    const yHigh = padding + h - ((d.h - min)/range)*h;
+    const yLow  = padding + h - ((d.l - min)/range)*h;
+    const yOpen = padding + h - ((d.o - min)/range)*h;
+    const yClose= padding + h - ((d.c - min)/range)*h;
 
     const up = d.c >= d.o;
 
     ctx.strokeStyle = up ? "#00ff00" : "#ff0000";
     ctx.fillStyle   = up ? "#00ff00" : "#ff0000";
 
+    // ヒゲ
     ctx.beginPath();
     ctx.moveTo(x, yHigh);
     ctx.lineTo(x, yLow);
     ctx.stroke();
 
+    // 実体
     const bodyTop = Math.min(yOpen, yClose);
     const bodyHeight = Math.abs(yClose - yOpen) || 1;
 
@@ -1053,6 +994,7 @@ function drawFXCandle(opens, highs, lows, closes){
       candleWidth,
       bodyHeight
     );
+
   });
 }
 
@@ -1069,7 +1011,6 @@ window.addEventListener("resize",()=>{
   },100);   // iPhone対策（高さ確定待ち）
 
 });
-loadFX();
 loadStock();
 setInterval(loadStock,600000);
 
@@ -1231,7 +1172,7 @@ async function loadNews(){
     console.log("Economy news failed:", e);
   }
 
-  /* ===== 描画処理 ===== */
+ 
     /* ===== 描画処理 ===== */
 
   newsGeneral.innerHTML = "";
