@@ -961,21 +961,23 @@ volumeData.forEach((vol,i)=>{
 
 function drawFXCandle(opens, highs, lows, closes){
 
-  const canvas = document.getElementById("fxChart");
-  const ctx = canvas.getContext("2d");
+  if(!opens || !opens.length) return;
 
+  const canvas = document.getElementById("fxChart");
+  if(!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  if(rect.width === 0 || rect.height === 0) return;
+
+  const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
 
-  const rect = canvas.getBoundingClientRect();  // ← 追加
-
-  canvas.width  = rect.width * dpr;             // ← 変更
-  canvas.height = rect.height * dpr;            // ← 変更
+  canvas.width  = rect.width * dpr;
+  canvas.height = rect.height * dpr;
 
   ctx.setTransform(1,0,0,1,0,0);
   ctx.scale(dpr,dpr);
-
-
-ctx.clearRect(0,0,rect.width,rect.height);
+  ctx.clearRect(0,0,rect.width,rect.height);
 
   const data = opens.map((o,i)=>({
     o:o,
@@ -983,18 +985,17 @@ ctx.clearRect(0,0,rect.width,rect.height);
     l:lows[i],
     c:closes[i]
   })).filter(v =>
-  v.o !== null &&
-  v.h !== null &&
-  v.l !== null &&
-  v.c !== null
-).slice(-40); // 最新30本
+    v.o !== null &&
+    v.h !== null &&
+    v.l !== null &&
+    v.c !== null
+  ).slice(-40);
 
   if(data.length < 2) return;
 
   const padding = 20;
-const w = rect.width - padding*2;
-const fullHeight = rect.height - padding*2;
-const h = fullHeight * 1;   // ← 1倍
+  const w = rect.width - padding*2;
+  const h = rect.height - padding*2;
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
@@ -1007,23 +1008,21 @@ const h = fullHeight * 1;   // ← 1倍
 
     const x = padding + i*gap + gap/2;
 
-    const yHigh = padding + h - ((d.h - min)/range)*h;
-    const yLow  = padding + h - ((d.l - min)/range)*h;
-    const yOpen = padding + h - ((d.o - min)/range)*h;
-    const yClose= padding + h - ((d.c - min)/range)*h;
+    const yHigh  = padding + h - ((d.h - min)/range)*h;
+    const yLow   = padding + h - ((d.l - min)/range)*h;
+    const yOpen  = padding + h - ((d.o - min)/range)*h;
+    const yClose = padding + h - ((d.c - min)/range)*h;
 
     const up = d.c >= d.o;
 
     ctx.strokeStyle = up ? "#00ff00" : "#ff0000";
     ctx.fillStyle   = up ? "#00ff00" : "#ff0000";
 
-    // ヒゲ
     ctx.beginPath();
     ctx.moveTo(x, yHigh);
     ctx.lineTo(x, yLow);
     ctx.stroke();
 
-    // 実体
     const bodyTop = Math.min(yOpen, yClose);
     const bodyHeight = Math.abs(yClose - yOpen) || 1;
 
@@ -1033,7 +1032,6 @@ const h = fullHeight * 1;   // ← 1倍
       candleWidth,
       bodyHeight
     );
-
   });
 }
 
