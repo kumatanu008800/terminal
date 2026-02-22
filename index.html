@@ -734,14 +734,7 @@ async function loadStock(){
 
 /* ===== 表示日数を条件分岐（完成版） ===== */
 
-const isIphone =
-  /iPhone/.test(navigator.userAgent);
-
-const isPortrait =
-  window.innerHeight > window.innerWidth;
-
-const displayDays =
-  (isIphone && isPortrait) ? 7 : 20;
+const displayDays = 20;
 
 const filtered = rawPrices
   .map((p,i)=>({
@@ -968,7 +961,7 @@ const padding = isLandscape ? 30 : 60;
  
  
  const baseGap = w/(chartData.length-1);
-const gap = isLandscape ? baseGap * 0.3 : baseGap;
+const gap = isLandscape ? baseGap * 0.8 : baseGap;
 // 横画面で中央寄せするための開始X補正
 const contentWidth = gap * (chartData.length - 1);
 const offsetX = isLandscape ? (w - contentWidth) / 2 : 0;
@@ -985,8 +978,18 @@ const offsetX = isLandscape ? (w - contentWidth) / 2 : 0;
   ctx.lineTo(x,padding+priceHeight);
   ctx.stroke();
 
-if(isLandscape || i%2===0){
-  ctx.fillText(lab,x-15,rect.height-10);
+// iPhone縦判定
+const isIphone =
+  /iPhone/.test(navigator.userAgent);
+
+const isPortrait =
+  window.innerHeight > window.innerWidth;
+
+// iPhone縦のときだけ日付を描かない
+if(!(isIphone && isPortrait)){
+  if(isLandscape || i%2===0){
+    ctx.fillText(lab, x-15, rect.height-10);
+  }
 }
  });
 
