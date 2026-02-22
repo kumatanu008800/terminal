@@ -732,14 +732,14 @@ async function loadStock(){
 /* ===== 表示日数を条件分岐 ===== */
 /* ===== 表示日数を条件分岐（安定版） ===== */
 
+/* ===== 表示日数を条件分岐（完成版） ===== */
+
 const isIphone =
   /iPhone/.test(navigator.userAgent);
 
-// 画面の縦横を実寸で判定（matchMediaより安定）
 const isPortrait =
   window.innerHeight > window.innerWidth;
 
-// iPhoneかつ縦のときだけ7日
 const displayDays =
   (isIphone && isPortrait) ? 7 : 20;
 
