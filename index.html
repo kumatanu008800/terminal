@@ -729,14 +729,25 @@ async function loadStock(){
   const rawVolume =
     result.indicators.quote[0].volume;
 
-  const filtered = rawPrices
-    .map((p,i)=>({
-      price:p,
-      time:rawTimes[i],
-      volume:rawVolume[i]
-    }))
-    .filter(v=>v.price!==null && v.volume!==null)
-    .slice(-7);
+/* ===== 表示日数を条件分岐 ===== */
+const isPortrait =
+  window.matchMedia("(orientation: portrait)").matches;
+
+const isIphone =
+  /iPhone/.test(navigator.userAgent);
+
+// iPhoneの縦画面だけ7日、それ以外は20日
+const displayDays =
+  (isPortrait && isIphone) ? 7 : 20;
+
+const filtered = rawPrices
+  .map((p,i)=>({
+    price:p,
+    time:rawTimes[i],
+    volume:rawVolume[i]
+  }))
+  .filter(v=>v.price!==null && v.volume!==null)
+  .slice(-displayDays);
 
   const prices  = filtered.map(v=>v.price);
   const times   = filtered.map(v=>v.time);
