@@ -971,9 +971,9 @@ const offsetX = isLandscape ? (w - contentWidth) / 2 : 0;
   ctx.lineTo(x,padding+priceHeight);
   ctx.stroke();
 
-  if(!isLandscape || i%2===0){
-    ctx.fillText(lab,x-15,rect.height-10);
-  }
+if(isLandscape || i%2===0){
+  ctx.fillText(lab,x-15,rect.height-10);
+}
  });
 
  /* ===== 折れ線 ===== */
