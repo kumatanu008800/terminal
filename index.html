@@ -990,7 +990,11 @@ const isPortrait =
 // iPhone縦のときだけ日付を描かない
 if(!(isIphone && isPortrait)){
   if(isLandscape || i%2===0){
-    ctx.fillText(lab, x-15, rect.height-10);
+
+    const labelOffset = isLandscape ? -10 : -15; 
+    // ← -15 → -10 にすると 5px右へ移動
+
+    ctx.fillText(lab, x + labelOffset, rect.height-10);
   }
 }
  });
