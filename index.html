@@ -222,6 +222,12 @@ canvas{
 
 @media (orientation: landscape){
 
+/* ===== 横画面 ニュース文字拡大 ===== */
+.newsItem{
+  font-size:16.8px;  /* 14px × 1.2 = 約16.8px */
+}
+
+
   .page{
     flex-direction:column;
     overflow:auto;
@@ -1044,7 +1050,7 @@ const isLandscape =
 
 const h = fullHeight * (isLandscape ? 1.75 : 1);
 
-const yOffset = isLandscape ? -(h - fullHeight) * 0.54 : 0;
+const yOffset = isLandscape ? -(h - fullHeight) * 0.52 : 0;
 
   const max = Math.max(...data.map(d=>d.h));
   const min = Math.min(...data.map(d=>d.l));
