@@ -313,7 +313,7 @@ canvas{
 }
 
   #bootdate{
-    top:57%;   /* ← 50% → 55% に下げる */
+    top:53%;   /* ← 50% → 55% に下げる */
 }
 
 
@@ -1340,6 +1340,41 @@ newsUpdatedEconomy.innerText =
 
 loadNews();
 setInterval(loadNews,352000);
+
+/* ===== 自動フルスクリーン化（Fire TV / Silk対策） ===== */
+
+function enterFullscreen(){
+
+  const el = document.documentElement;
+
+  if(el.requestFullscreen){
+    el.requestFullscreen();
+  }else if(el.webkitRequestFullscreen){
+    el.webkitRequestFullscreen();
+  }
+
+}
+
+/* 初回クリックで必ずフルスクリーン */
+document.addEventListener("click", enterFullscreen, {once:true});
+
+/* 念のためロード直後にも試行 */
+window.addEventListener("load", ()=>{
+  setTimeout(()=>{
+
+    // 擬似クリック発火
+    document.body.click();
+
+  },1000);
+});
+
+/* フルスクリーン解除されたら再突入 */
+document.addEventListener("fullscreenchange", ()=>{
+  if(!document.fullscreenElement){
+    setTimeout(enterFullscreen,500);
+  }
+});
+
 
 </script>
 </body>
