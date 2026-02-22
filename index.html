@@ -224,7 +224,7 @@ canvas{
 
 /* ===== 横画面 ニュース文字拡大 ===== */
 .newsItem{
-  font-size:16.8px;  /* 14px × 1.2 = 約16.8px */
+  font-size:17px;  /* 14px × 1.2 = 約16.8px */
 }
 
 
@@ -951,12 +951,19 @@ const padding = isLandscape ? 30 : 60;
 
   ctx.fillText(val.toFixed(0),1,y+3);
  }
+ 
+ 
+ const baseGap = w/(chartData.length-1);
+const gap = isLandscape ? baseGap * 0.5 : baseGap;
+// 横画面で中央寄せするための開始X補正
+const contentWidth = gap * (chartData.length - 1);
+const offsetX = isLandscape ? (w - contentWidth) / 2 : 0;
 
- const gap = w/(chartData.length-1);
+
 
  /* ===== 縦線 + 日付 ===== */
  lastLabels.forEach((lab,i)=>{
-  const x = padding + i*gap;
+  const x = padding + offsetX + i*gap;
 
   ctx.strokeStyle="#181818";
   ctx.beginPath();
@@ -975,7 +982,7 @@ const padding = isLandscape ? 30 : 60;
  ctx.beginPath();
 
  chartData.forEach((v,i)=>{
-  const x = padding + i*gap;
+  const x = padding + offsetX + i*gap;
   const y =
     padding + priceHeight -
     ((v-min)/range)*priceHeight;
@@ -992,7 +999,7 @@ const padding = isLandscape ? 30 : 60;
  volumeData.forEach((vol,i)=>{
 
   const barWidth = gap * (isLandscape ? 0.18 : 0.5);
-  const x = padding + i*gap - barWidth/2;
+  const x = padding + offsetX + i*gap - barWidth/2;
 
   const barHeight =
     (vol/maxVolume)*volumeHeight;
