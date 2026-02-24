@@ -1117,7 +1117,7 @@ const fullHeight = rect.height - padding*2;
 const isLandscape =
   window.matchMedia("(orientation: landscape)").matches;
 
-const h = fullHeight * (isLandscape ? 1.75 : 1);  //シルクでは1.35
+const h = fullHeight * (isLandscape ? 1.2 : 1);  //シルクでは1.2もともと1.75
 
 const yOffset = isLandscape ? -(h - fullHeight) * 0.52 : 0;
 
