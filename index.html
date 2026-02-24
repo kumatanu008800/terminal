@@ -589,21 +589,34 @@ if(lastFX === null){
 
   const prevPrice = lastFX.toFixed(3);
 
-  for(let i=0;i<displayPrice.length;i++){
+let diffIndex = -1;
 
-    const newChar = displayPrice[i];
-    const oldChar = prevPrice[i];
-
-    if(newChar !== oldChar && newChar !== "."){
-
-      html += `<span class="${
-        latest > lastFX ? "digitUp" : "digitDown"
-      }">${newChar}</span>`;
-
-    }else{
-      html += newChar;
-    }
+// 最初に変わった桁を探す
+for(let i=0;i<displayPrice.length;i++){
+  if(displayPrice[i] !== prevPrice[i] &&
+     displayPrice[i] !== "."){
+    diffIndex = i;
+    break;
   }
+}
+
+for(let i=0;i<displayPrice.length;i++){
+
+  const newChar = displayPrice[i];
+
+  // 変化した桁以降すべてを光らせる
+  if(diffIndex !== -1 &&
+     i >= diffIndex &&
+     newChar !== "."){
+
+    html += `<span class="${
+      latest > lastFX ? "digitUp" : "digitDown"
+    }">${newChar}</span>`;
+
+  }else{
+    html += newChar;
+  }
+}
 
   priceEl.innerHTML = html;
 }
@@ -629,13 +642,24 @@ if(lastTickerFX !== null){
 
   const prev = lastTickerFX.toFixed(3);
   let html = "";
+  let diffIndex = -1;
+
+  // 最初に変わった桁を探す
+  for(let i=0;i<tickerPrice.length;i++){
+    if(tickerPrice[i] !== prev[i] &&
+       tickerPrice[i] !== "."){
+      diffIndex = i;
+      break;
+    }
+  }
 
   for(let i=0;i<tickerPrice.length;i++){
 
     const newChar = tickerPrice[i];
-    const oldChar = prev[i];
 
-    if(newChar !== oldChar && newChar !== "."){
+    if(diffIndex !== -1 &&
+       i >= diffIndex &&
+       newChar !== "."){
 
       html += `<span class="${
         latest > lastTickerFX
@@ -798,26 +822,34 @@ if(lastOrukan === null){
 }else{
 
   let html = "推算ｵﾙｶﾝ ";
-  const prevPrice =
-    lastOrukan.toFixed(0);
+const prevPrice = lastOrukan.toFixed(0);
+let diffIndex = -1;
 
-  for(let i=0;i<displayPrice.length;i++){
-
-    const newChar = displayPrice[i];
-    const oldChar = prevPrice[i];
-
-    if(newChar !== oldChar){
-
-      html += `<span class="${
-        orukanEstimated > lastOrukan
-          ? "digitUp"
-          : "digitDown"
-      }">${newChar}</span>`;
-
-    }else{
-      html += newChar;
-    }
+// 最初に変わった桁を探す
+for(let i=0;i<displayPrice.length;i++){
+  if(displayPrice[i] !== prevPrice[i]){
+    diffIndex = i;
+    break;
   }
+}
+
+for(let i=0;i<displayPrice.length;i++){
+
+  const newChar = displayPrice[i];
+
+  if(diffIndex !== -1 &&
+     i >= diffIndex){
+
+    html += `<span class="${
+      orukanEstimated > lastOrukan
+        ? "digitUp"
+        : "digitDown"
+    }">${newChar}</span>`;
+
+  }else{
+    html += newChar;
+  }
+}
 
   priceEl.innerHTML = html;
 }
@@ -861,15 +893,22 @@ if(lastTickerOrukan !== null){
     lastTickerOrukan.toFixed(0);
 
   let html = "";
+  let diffIndex = -1;
+
+  for(let i=0;i<tickerOrukanPrice.length;i++){
+    if(tickerOrukanPrice[i] !== prev[i]){
+      diffIndex = i;
+      break;
+    }
+  }
 
   for(let i=0;i<tickerOrukanPrice.length;i++){
 
     const newChar =
       tickerOrukanPrice[i];
-    const oldChar =
-      prev[i];
 
-    if(newChar !== oldChar){
+    if(diffIndex !== -1 &&
+       i >= diffIndex){
 
       html += `<span class="${
         orukanEstimated > lastTickerOrukan
@@ -1078,7 +1117,7 @@ const fullHeight = rect.height - padding*2;
 const isLandscape =
   window.matchMedia("(orientation: landscape)").matches;
 
-const h = fullHeight * (isLandscape ? 1.35 : 1);
+const h = fullHeight * (isLandscape ? 1.75 : 1);  //シルクでは1.35
 
 const yOffset = isLandscape ? -(h - fullHeight) * 0.52 : 0;
 
