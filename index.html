@@ -341,7 +341,7 @@ canvas{
   <canvas id="fxChart"></canvas>
 
 <div class="bigFX">
-  <div>USD/JPY <span id="price">取得中…</span></div>
+  <div>USD/JPY <span id="price">LOADING...</span></div>
   <div id="fxInfo"></div>
 </div>
 
@@ -359,7 +359,7 @@ canvas{
       MAXIS 全世界株式（オール・カントリー）
     </div>
 
-    <div id="ac_price">取得中…</div>
+    <div id="ac_price">LOADING...</div>
     <div class="updatedTime" id="stockUpdated"></div>
 
     <canvas id="chart"></canvas>
@@ -371,7 +371,7 @@ canvas{
 <div style="color:#ff9900;margin-bottom:10px;">
 週間天気  
 </div>
-<div id="weatherToday">取得中…</div>
+<div id="weatherToday">LOADING...</div>
 <div style="margin-top:10px;border-top:1px solid #222;padding-top:8px;" id="weatherWeekly"></div>
 </div>
 </div>
@@ -703,7 +703,7 @@ updateTicker();
   }catch(e){
     console.error(e);
     document.getElementById("price")
-      .innerText = "取得エラー";
+      .innerText = "DATA ERROR";
     fxUpdated.innerText =
       "ERROR " + getNowTime();
   }
@@ -814,11 +814,11 @@ const displayPrice =
 if(lastOrukan === null){
 
   priceEl.innerText =
-    "推算ｵﾙｶﾝ " + displayPrice;
+    "ESTｵﾙｶﾝ " + displayPrice;
 
 }else{
 
-  let html = "推算ｵﾙｶﾝ ";
+  let html = "ESTｵﾙｶﾝ ";
 const prevPrice = lastOrukan.toFixed(0);
 let diffIndex = -1;
 
@@ -924,7 +924,7 @@ if(lastTickerOrukan !== null){
 lastTickerOrukan = orukanEstimated;
 
 tickerStock +=
-  ` ◆ 推算ｵﾙｶﾝ ${tickerOrukanHTML}
+  ` ◆ ESTｵﾙｶﾝ ${tickerOrukanHTML}
    <span style="color:${orukanDiff>=0?"#00ff00":"#ff0000"}">
    ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
 }
@@ -938,7 +938,7 @@ tickerStock +=
 
  }catch(e){
   console.error(e);
-  ac_price.innerText="株価取得エラー";
+  ac_price.innerText="STOCK DATA ERROR";
   stockUpdated.innerText="ERROR "+getNowTime();
  }
 }
@@ -1265,7 +1265,7 @@ async function loadWeatherByCoords(lat,lon,label){
   weatherWeekly.innerHTML=wk;
 
  }catch(e){
-  weatherToday.innerText="天気取得エラー";
+  weatherToday.innerText="WEATHER DATA ERROR";
  }
 }
 
@@ -1350,19 +1350,19 @@ async function loadNews(){
     });
   }else{
     newsGeneral.innerHTML =
-      `<div class="newsItem">総合ニュース取得失敗</div>`;
+      `<div class="newsItem">GENERAL NEWS ERROR</div>`;
   }
 
   /* --- 経済 --- */
   if(economyItems.length){
     economyItems.slice(0,4).forEach(n=>{
       newsEconomy.innerHTML +=
-        `<div class="newsItem">💹 ${highlightWords(n.title)}</div>`;
+        `<div class="newsItem">▲ ${highlightWords(n.title)}</div>`;
       tickerCombined += " ◆ " + n.title;
     });
   }else{
     newsEconomy.innerHTML =
-      `<div class="newsItem">経済ニュース取得失敗</div>`;
+      `<div class="newsItem">MARKET NEWS ERROR</div>`;
   }
 
   tickerNews = tickerCombined;
