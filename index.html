@@ -814,11 +814,11 @@ const displayPrice =
 if(lastOrukan === null){
 
   priceEl.innerText =
-    "ESTｵﾙｶﾝ " + displayPrice;
+    "ESTオルカン " + displayPrice;
 
 }else{
 
-  let html = "ESTｵﾙｶﾝ ";
+  let html = "ESTオルカン ";
 const prevPrice = lastOrukan.toFixed(0);
 let diffIndex = -1;
 
@@ -924,7 +924,7 @@ if(lastTickerOrukan !== null){
 lastTickerOrukan = orukanEstimated;
 
 tickerStock +=
-  ` ◆ ESTｵﾙｶﾝ ${tickerOrukanHTML}
+  ` ◆ ESTオルカン ${tickerOrukanHTML}
    <span style="color:${orukanDiff>=0?"#00ff00":"#ff0000"}">
    ${orukanDiff>=0?"▲":"▼"}${Math.abs(orukanDiffPercent).toFixed(2)}%</span>`;
 }
@@ -1345,7 +1345,7 @@ async function loadNews(){
   if(generalItems.length){
     generalItems.slice(0,4).forEach(n=>{
       newsGeneral.innerHTML +=
-        `<div class="newsItem">▶ ${highlightWords(n.title)}</div>`;
+        `<div class="newsItem">> ${highlightWords(n.title)}</div>`;
       tickerCombined += " ◆ " + n.title;
     });
   }else{
@@ -1357,7 +1357,7 @@ async function loadNews(){
   if(economyItems.length){
     economyItems.slice(0,4).forEach(n=>{
       newsEconomy.innerHTML +=
-        `<div class="newsItem">▲ ${highlightWords(n.title)}</div>`;
+        `<div class="newsItem">> ${highlightWords(n.title)}</div>`;
       tickerCombined += " ◆ " + n.title;
     });
   }else{
